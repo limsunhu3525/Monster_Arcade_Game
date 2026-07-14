@@ -2,6 +2,7 @@ import './localization';
 import { MonsterCollisionReactionSystem } from './collision/monsterCollisionReactionSystem';
 import { MonsterDebugPanel } from './debug/monsterDebugPanel';
 import { CollisionReactionVfxController } from './effects/collisionReactionVfxController';
+import { SkillVfxController } from './effects/skillVfxController';
 import type { GameObject } from './gameObject';
 import type { IPhysics } from './IPhysics';
 import { MonsterRuntimeController } from './monster/monsterRuntimeController';
@@ -31,6 +32,7 @@ const addEffect = (effect: GameObject) => {
 };
 
 const monsterSkillExecutor = new MonsterSkillExecutor(monsterRuntime, getPhysics);
+const skillVfxController = new SkillVfxController(monsterRuntime, getPhysics, addEffect);
 
 const monsterCollisionReactionSystem = new MonsterCollisionReactionSystem(monsterRuntime, getPhysics);
 monsterCollisionReactionSystem.attach(roulette);
@@ -50,6 +52,7 @@ if (debugEnabled) {
 (window as any).options = options;
 (window as any).monsterRuntime = monsterRuntime;
 (window as any).monsterSkillExecutor = monsterSkillExecutor;
+(window as any).skillVfxController = skillVfxController;
 (window as any).monsterCollisionReactionSystem = monsterCollisionReactionSystem;
 (window as any).collisionReactionVfxController = collisionReactionVfxController;
 (window as any).traitSelectionModal = traitSelectionModal;
