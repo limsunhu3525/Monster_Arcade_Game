@@ -197,7 +197,7 @@ export class TraitSelectionModal {
     const legacy = localStorage.getItem(LEGACY_NAME_STORAGE_KEY);
     if (!legacy) return [];
     return legacy
-      .split(/[,\n]/g)
+      .split(/[,\r\n]/g)
       .map((name) => name.replace(/\*\d+$/, '').replace(/\/\d+$/, '').trim())
       .filter(Boolean);
   }
