@@ -207,8 +207,10 @@ export class MonsterRuntimeController extends EventTarget {
       return;
     }
 
-    const ordered = [...marbles].sort((a, b) => a.id - b.id);
-    this.bindings = ordered.map((marble, index) => {
+    // Preserve the creation order. Marble IDs are shuffled only to randomize spawn
+    // positions; sorting by ID here would break the name/trait/count grouping chosen
+    // in the setup UI.
+    this.bindings = marbles.map((marble, index) => {
       const definition = definitions[index % definitions.length];
       return bindMarbleToMonster(marble, definition.id, `${definition.id}-${marble.id}`);
     });
