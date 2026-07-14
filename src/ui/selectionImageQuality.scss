@@ -1,0 +1,21 @@
+.trait-picker__card-visual {
+  width: 96px;
+  height: 112px;
+}
+
+.trait-picker__card-visual img {
+  width: 64px;
+  height: 64px;
+  max-width: 64px;
+  max-height: 64px;
+  object-fit: contain;
+  image-rendering: auto;
+  transform: translateZ(0);
+  filter: drop-shadow(0 10px 18px var(--trait-glow, rgba(255, 255, 255, 0.16)));
+}
+
+@media (min-width: 1100px) {
+  .trait-picker__card {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+}
