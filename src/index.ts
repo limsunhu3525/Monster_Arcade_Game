@@ -6,6 +6,7 @@ import options from './options';
 import { registerServiceWorker } from './registerServiceWorker';
 import { Roulette } from './roulette';
 import { MonsterSkillExecutor } from './skills/monsterSkillExecutor';
+import { TraitSelectionModal } from './ui/traitSelectionModal';
 
 const DEFAULT_GAME_SPEED = 0.65;
 
@@ -16,6 +17,9 @@ roulette.setSpeed(DEFAULT_GAME_SPEED);
 
 const monsterRuntime = new MonsterRuntimeController();
 monsterRuntime.attach(roulette);
+
+const traitSelectionModal = new TraitSelectionModal(monsterRuntime);
+traitSelectionModal.mount();
 
 const monsterSkillExecutor = new MonsterSkillExecutor(
   monsterRuntime,
@@ -35,4 +39,5 @@ if (debugEnabled) {
 (window as any).options = options;
 (window as any).monsterRuntime = monsterRuntime;
 (window as any).monsterSkillExecutor = monsterSkillExecutor;
+(window as any).traitSelectionModal = traitSelectionModal;
 (window as any).DEFAULT_GAME_SPEED = DEFAULT_GAME_SPEED;
