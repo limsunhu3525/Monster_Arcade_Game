@@ -13,7 +13,6 @@ export interface MarbleTraitVisual {
   primaryColor: string;
   secondaryColor: string;
   glowColor: string;
-  /** Optional future monster artwork. The renderer can use this when character assets are added. */
   spriteUrl?: string;
 }
 
@@ -173,6 +172,8 @@ export class Marble {
 
   private _renderNormal(ctx: CanvasRenderingContext2D, zoom: number, outline: boolean, skin?: CanvasImageSource) {
     const hs = this.size / 2;
+    const isMonsterSprite = Boolean(skin && this.traitVisual?.spriteUrl);
+    const spriteHalfSize = isMonsterSprite ? hs * 1.9 : hs;
 
     this._renderTraitAura(ctx, zoom);
     ctx.fillStyle = `hsl(${this.hue} 100% ${this.theme.marbleLightness + 25 * Math.min(1, this.impact / 500)}%)`;
@@ -181,7 +182,7 @@ export class Marble {
       transformGuard(ctx, () => {
         ctx.translate(this.x, this.y);
         ctx.rotate(this.angle);
-        ctx.drawImage(skin, -hs, -hs, hs * 2, hs * 2);
+        ctx.drawImage(skin, -spriteHalfSize, -spriteHalfSize, spriteHalfSize * 2, spriteHalfSize * 2);
       });
     } else {
       this._drawMarbleBody(ctx, false);
