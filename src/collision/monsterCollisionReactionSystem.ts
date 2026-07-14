@@ -1,4 +1,4 @@
-import type { IPhysics } from '../IPhysics';
+import type { IPhysics, MarbleCollisionPair } from '../IPhysics';
 import { getMonsterDefinition } from '../monster/monsterRegistry';
 import type { MonsterRuntimeController } from '../monster/monsterRuntimeController';
 
@@ -20,11 +20,6 @@ export interface MonsterCollisionReactionDetail {
   traitA: string;
   traitB: string;
   relativeSpeed: number;
-}
-
-interface CollisionPair {
-  a: number;
-  b: number;
 }
 
 interface ReactionDefinition {
@@ -72,7 +67,7 @@ export class MonsterCollisionReactionSystem {
     const physics = this.getPhysics();
     if (!physics) return;
 
-    const currentPairs = this.getCurrentCollisionPairs(physics);
+    const currentPairs = physics.getMarbleCollisionPairs();
     const currentKeys = new Set(currentPairs.map((pair) => this.getPairKey(pair.a, pair.b)));
 
     currentPairs.forEach((pair) => {
@@ -85,13 +80,14 @@ export class MonsterCollisionReactionSystem {
     this.activePairs = currentKeys;
   }
 
-  private handleCollisionStart(physics: IPhysics, pair: CollisionPair) {
+  private handleCollisionStart(physics: IPhysics, pair: MarbleCollisionPair) {
     const key = this.getPairKey(pair.a, pair.b);
     const now = performance.now();
     if ((this.cooldownUntil.get(key) ?? 0) > now) return;
 
-    const monsterA = this.runtime.getSnapshot().monsters.find((monster) => monster.marbleId === pair.a);
-    const monsterB = this.runtime.getSnapshot().monsters.find((monster) => monster.marbleId === pair.b);
+    const snapshot = this.runtime.getSnapshot();
+    const monsterA = snapshot.monsters.find((monster) => monster.marbleId === pair.a);
+    const monsterB = snapshot.monsters.find((monster) => monster.marbleId === pair.b);
     if (!monsterA || !monsterB) return;
 
     const definitionA = getMonsterDefinition(monsterA.definitionId);
@@ -122,6 +118,7 @@ export class MonsterCollisionReactionSystem {
     }
 
     this.cooldownUntil.set(key, now + PAIR_COOLDOWN_MS);
+
     const detail: MonsterCollisionReactionDetail = {
       reactionId: reaction.id,
       reactionName: reaction.name,
@@ -199,32 +196,6 @@ export class MonsterCollisionReactionSystem {
         (reaction.elements[0] === elementA && reaction.elements[1] === elementB) ||
         (reaction.elements[0] === elementB && reaction.elements[1] === elementA)
     );
-  }
-
-  private getCurrentCollisionPairs(physics: IPhysics): CollisionPair[] {
-    const physicsInternals = physics as unknown as { marbleMap?: Record<number, any> };
-    const marbleMap = physicsInternals.marbleMap ?? {};
-    const idByBody = new Map<any, number>();
-    Object.entries(marbleMap).forEach(([id, body]) => idByBody.set(body, Number(id)));
-
-    const pairs = new Map<string, CollisionPair>();
-    Object.entries(marbleMap).forEach(([idString, body]) => {
-      const a = Number(idString);
-      let edge = body.GetContactList?.();
-      let guard = 0;
-
-      while (edge && guard < 64) {
-        const b = idByBody.get(edge.other);
-        if (b !== undefined && b !== a && edge.contact?.IsTouching?.()) {
-          const key = this.getPairKey(a, b);
-          pairs.set(key, { a: Math.min(a, b), b: Math.max(a, b) });
-        }
-        edge = edge.next;
-        guard += 1;
-      }
-    });
-
-    return [...pairs.values()];
   }
 
   private getPairKey(a: number, b: number) {
