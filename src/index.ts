@@ -10,6 +10,7 @@ import options from './options';
 import { registerServiceWorker } from './registerServiceWorker';
 import { Roulette } from './roulette';
 import { MonsterSkillExecutor } from './skills/monsterSkillExecutor';
+import { cleanupLegacyUi } from './ui/legacyUiCleanup';
 import { ResultModal } from './ui/resultModal';
 import './ui/setupFlowOverrides.scss';
 import { StartScreen } from './ui/startScreen';
@@ -18,6 +19,7 @@ import { TraitSelectionModal } from './ui/traitSelectionModal';
 const DEFAULT_GAME_SPEED = 0.65;
 
 registerServiceWorker();
+cleanupLegacyUi();
 
 const roulette = new Roulette();
 roulette.setSpeed(DEFAULT_GAME_SPEED);
