@@ -34,10 +34,6 @@ const setParticipants = (names: string[]) => {
 };
 
 const startScreen = new StartScreen();
-startScreen.mount(() => {
-  startScreen.hide();
-  traitSelectionModal.open();
-});
 
 const startRaceFromSetup = () => {
   startScreen.hide();
@@ -51,6 +47,11 @@ const traitSelectionModal = new TraitSelectionModal(monsterRuntime, {
   startRace: startRaceFromSetup,
 });
 traitSelectionModal.mount();
+
+startScreen.mount(() => {
+  startScreen.hide();
+  traitSelectionModal.open();
+});
 
 const resultModal = new ResultModal(monsterRuntime);
 resultModal.mount(roulette);
