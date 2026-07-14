@@ -30,6 +30,7 @@ export class RouletteRenderer {
   public sizeFactor = 1;
 
   protected _images: { [key: string]: HTMLImageElement } = {};
+  private _spriteImages: { [url: string]: HTMLImageElement } = {};
   protected _theme: ColorTheme = Themes.dark;
   protected _keywordService: KeywordService;
 
@@ -118,13 +119,29 @@ export class RouletteRenderer {
     await Promise.all(loadPromises);
   }
 
-  private getMarbleImage(name: string): CanvasImageSource | undefined {
-    // Priority 1: Hardcoded images
-    if (this._images[name]) {
-      return this._images[name];
+  private getSpriteImage(url: string): CanvasImageSource | undefined {
+    if (!this._spriteImages[url]) {
+      const image = new Image();
+      image.src = url;
+      this._spriteImages[url] = image;
     }
-    // Priority 2: Keyword sprites from API
-    return this._keywordService.getSprite(name);
+
+    const image = this._spriteImages[url];
+    return image.complete && image.naturalWidth > 0 ? image : undefined;
+  }
+
+  private getMarbleImage(marble: Marble): CanvasImageSource | undefined {
+    const traitSpriteUrl = marble.getTraitSpriteUrl();
+    if (traitSpriteUrl) {
+      const sprite = this.getSpriteImage(traitSpriteUrl);
+      if (sprite) return sprite;
+    }
+
+    if (this._images[marble.name]) {
+      return this._images[marble.name];
+    }
+
+    return this._keywordService.getSprite(marble.name);
   }
 
   protected onBeforeEntities(): void {}
@@ -212,7 +229,7 @@ export class RouletteRenderer {
         camera.zoom * initialZoom,
         i === winnerIndex,
         false,
-        this.getMarbleImage(marble.name),
+        this.getMarbleImage(marble),
         viewPort,
         this._theme
       );
@@ -225,11 +242,10 @@ export class RouletteRenderer {
     this.ctx.fillStyle = theme.winnerBackground;
     this.ctx.fillRect(this._canvas.width / 2, this._canvas.height - 168, this._canvas.width / 2, 168);
 
-    // Draw marble image or colored circle
     const marbleSize = 100;
     const marbleCenterX = this._canvas.width - marbleSize / 2 - 20;
     const marbleCenterY = this._canvas.height - 168 / 2;
-    const marbleImage = this.getMarbleImage(winner.name);
+    const marbleImage = this.getMarbleImage(winner);
 
     if (marbleImage) {
       this.ctx.drawImage(
