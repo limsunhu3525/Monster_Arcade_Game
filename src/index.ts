@@ -12,6 +12,7 @@ import { Roulette } from './roulette';
 import { MonsterSkillExecutor } from './skills/monsterSkillExecutor';
 import { ResultModal } from './ui/resultModal';
 import './ui/setupFlowOverrides.scss';
+import { StartScreen } from './ui/startScreen';
 import { TraitSelectionModal } from './ui/traitSelectionModal';
 
 const DEFAULT_GAME_SPEED = 0.65;
@@ -32,7 +33,14 @@ const setParticipants = (names: string[]) => {
   roulette.setMarbles(normalized);
 };
 
+const startScreen = new StartScreen();
+startScreen.mount(() => {
+  startScreen.hide();
+  traitSelectionModal.open();
+});
+
 const startRaceFromSetup = () => {
+  startScreen.hide();
   roulette.start();
   document.querySelector('#settings')?.classList.add('hide');
   document.querySelector('#donate')?.classList.add('hide');
@@ -79,4 +87,5 @@ if (debugEnabled) {
 (window as any).collisionReactionVfxController = collisionReactionVfxController;
 (window as any).traitSelectionModal = traitSelectionModal;
 (window as any).resultModal = resultModal;
+(window as any).startScreen = startScreen;
 (window as any).DEFAULT_GAME_SPEED = DEFAULT_GAME_SPEED;
