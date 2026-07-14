@@ -1,22 +1,11 @@
+import type { MonsterElement } from '../monster/monsterTypes';
 import type {
   MonsterRuntimeController,
   MonsterRuntimeSnapshot,
   MonsterTraitOption,
 } from '../monster/monsterRuntimeController';
+import { getMonsterVisualIdentity } from '../monster/monsterVisualIdentity';
 import './traitSelectionModal.scss';
-
-const TRAIT_VISUALS: Record<string, { icon: string; eyebrow: string }> = {
-  FIRE: { icon: '🔥', eyebrow: '폭발 · 역전' },
-  WATER: { icon: '💧', eyebrow: '감속 · 제어' },
-  WIND: { icon: '🌪️', eyebrow: '광역 · 교란' },
-  MAGIC: { icon: '🔮', eyebrow: '변칙 · 혼돈' },
-  STONE: { icon: '🪨', eyebrow: '중량 · 충돌' },
-  LIGHTNING: { icon: '⚡', eyebrow: '속도 · 제압' },
-  EARTH: { icon: '🌿', eyebrow: '지형 · 안정' },
-  ICE: { icon: '❄️', eyebrow: '관성 · 미끄러짐' },
-  DRAGON: { icon: '🐉', eyebrow: '강력 · 희소' },
-  BEAST: { icon: '🐾', eyebrow: '민첩 · 추적' },
-};
 
 interface ParticipantAssignment {
   marbleId: number;
@@ -176,12 +165,17 @@ export class TraitSelectionModal {
     snapshot.monsters.forEach((monster, index) => {
       const assignment = this.assignments.get(monster.marbleId);
       const trait = assignment ? traitById.get(assignment.definitionId) : undefined;
+      const visual = trait ? getMonsterVisualIdentity(trait.element as MonsterElement) : undefined;
       const button = document.createElement('button');
       button.type = 'button';
       button.className = 'trait-picker__participant';
       button.classList.toggle('is-active', monster.marbleId === this.activeMarbleId);
+      if (visual) {
+        button.style.setProperty('--trait-primary', visual.primaryColor);
+        button.style.setProperty('--trait-secondary', visual.secondaryColor);
+      }
       button.innerHTML = `
-        <span class="trait-picker__participant-index">${String(index + 1).padStart(2, '0')}</span>
+        <span class="trait-picker__participant-index">${visual?.icon ?? String(index + 1).padStart(2, '0')}</span>
         <span class="trait-picker__participant-copy">
           <strong>${this.escapeHtml(monster.name)}</strong>
           <small>${this.escapeHtml(trait?.selectionName ?? '특성 미선택')}</small>
@@ -205,11 +199,14 @@ export class TraitSelectionModal {
       : '<span>참가자를 선택하세요</span>';
 
     traits.forEach((trait) => {
-      const visual = TRAIT_VISUALS[trait.element] ?? { icon: '✦', eyebrow: '특수 특성' };
+      const visual = getMonsterVisualIdentity(trait.element as MonsterElement);
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'trait-picker__card';
       card.dataset.element = trait.element;
+      card.style.setProperty('--trait-primary', visual.primaryColor);
+      card.style.setProperty('--trait-secondary', visual.secondaryColor);
+      card.style.setProperty('--trait-glow', visual.glowColor);
       card.classList.toggle('is-selected', activeAssignment?.definitionId === trait.definitionId);
       card.innerHTML = `
         <span class="trait-picker__card-icon" aria-hidden="true">${visual.icon}</span>
