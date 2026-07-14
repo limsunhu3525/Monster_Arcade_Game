@@ -55,7 +55,13 @@ startScreen.mount(() => {
   traitSelectionModal.open();
 });
 
-const resultModal = new ResultModal(monsterRuntime);
+const resultModal = new ResultModal(monsterRuntime, {
+  showHome: () => startScreen.show(),
+  openSetup: () => {
+    startScreen.hide();
+    traitSelectionModal.open();
+  },
+});
 resultModal.mount(roulette);
 
 const getPhysics = () => (roulette as unknown as { physics?: IPhysics }).physics;
