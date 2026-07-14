@@ -1,3 +1,4 @@
+import type { MonsterCollisionReactionDetail } from '../collision/monsterCollisionReactionSystem';
 import { getSkillDefinition } from '../skills/skillRegistry';
 import type { MonsterRuntimeController, MonsterSkillDueDetail } from '../monster/monsterRuntimeController';
 
@@ -55,6 +56,13 @@ export class MonsterDebugPanel {
       const skill = getSkillDefinition(event.detail.skillId as any);
       this.pushLog(
         `${(event.detail.raceTimeMs / 1000).toFixed(2)}s  #${event.detail.marbleId}  ${skill?.displayName ?? event.detail.skillId}  DUE`
+      );
+    }) as EventListener);
+
+    this.runtime.addEventListener('collisionreaction', ((event: CustomEvent<MonsterCollisionReactionDetail>) => {
+      const detail = event.detail;
+      this.pushLog(
+        `${detail.reactionName}  #${detail.marbleAId} ${detail.traitA} × #${detail.marbleBId} ${detail.traitB}  v=${detail.relativeSpeed.toFixed(2)}`
       );
     }) as EventListener);
 
