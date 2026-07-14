@@ -10,6 +10,8 @@ import options from './options';
 import { registerServiceWorker } from './registerServiceWorker';
 import { Roulette } from './roulette';
 import { MonsterSkillExecutor } from './skills/monsterSkillExecutor';
+import { ResultModal } from './ui/resultModal';
+import './ui/setupFlowOverrides.scss';
 import { TraitSelectionModal } from './ui/traitSelectionModal';
 
 const DEFAULT_GAME_SPEED = 0.65;
@@ -22,8 +24,28 @@ roulette.setSpeed(DEFAULT_GAME_SPEED);
 const monsterRuntime = new MonsterRuntimeController();
 monsterRuntime.attach(roulette);
 
-const traitSelectionModal = new TraitSelectionModal(monsterRuntime);
+const setParticipants = (names: string[]) => {
+  const normalized = names.map((name) => name.trim()).filter(Boolean);
+  const legacyInput = document.querySelector<HTMLTextAreaElement>('#in_names');
+  if (legacyInput) legacyInput.value = normalized.join(',');
+  localStorage.setItem('mbr_names', normalized.join(','));
+  roulette.setMarbles(normalized);
+};
+
+const startRaceFromSetup = () => {
+  roulette.start();
+  document.querySelector('#settings')?.classList.add('hide');
+  document.querySelector('#donate')?.classList.add('hide');
+};
+
+const traitSelectionModal = new TraitSelectionModal(monsterRuntime, {
+  setParticipants,
+  startRace: startRaceFromSetup,
+});
 traitSelectionModal.mount();
+
+const resultModal = new ResultModal(monsterRuntime);
+resultModal.mount(roulette);
 
 const getPhysics = () => (roulette as unknown as { physics?: IPhysics }).physics;
 const addEffect = (effect: GameObject) => {
@@ -56,4 +78,5 @@ if (debugEnabled) {
 (window as any).monsterCollisionReactionSystem = monsterCollisionReactionSystem;
 (window as any).collisionReactionVfxController = collisionReactionVfxController;
 (window as any).traitSelectionModal = traitSelectionModal;
+(window as any).resultModal = resultModal;
 (window as any).DEFAULT_GAME_SPEED = DEFAULT_GAME_SPEED;
