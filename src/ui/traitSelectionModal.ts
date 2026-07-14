@@ -3,15 +3,24 @@ import { getDefaultMonsterSprite } from '../monster/monsterSpriteAssets';
 import type { MonsterRuntimeController, MonsterTraitOption } from '../monster/monsterRuntimeController';
 import { getMonsterVisualIdentity } from '../monster/monsterVisualIdentity';
 import './traitSelectionModal.scss';
+import './participantCountControls.scss';
 
 const PARTICIPANT_STORAGE_KEY = 'monster_participants';
 const TRAIT_STORAGE_KEY = 'monster_trait_assignments';
 const LEGACY_NAME_STORAGE_KEY = 'mbr_names';
+const MAX_PARTICIPANT_COUNT = 50;
 
 interface ParticipantAssignment {
   localId: number;
   name: string;
   definitionId: string;
+  count: number;
+}
+
+interface StoredParticipant {
+  name: string;
+  definitionId?: string;
+  count?: number;
 }
 
 interface TraitSelectionModalOptions {
@@ -51,7 +60,7 @@ export class TraitSelectionModal {
           <div>
             <p class="trait-picker__kicker">BUILD YOUR RACE</p>
             <h2 id="trait-picker-title">참가자와 특성을 설정하세요</h2>
-            <p class="trait-picker__subtitle">이름을 입력한 뒤 오른쪽 캐릭터 특성을 선택하면 참가자가 바로 등록됩니다.</p>
+            <p class="trait-picker__subtitle">이름을 입력하고 캐릭터 특성을 선택한 뒤, 왼쪽 목록에서 참가 수를 조절하세요.</p>
           </div>
           <button type="button" class="trait-picker__close" aria-label="닫기">×</button>
         </header>
@@ -92,10 +101,7 @@ export class TraitSelectionModal {
           <div class="trait-picker__progress"></div>
           <div class="trait-picker__footer-actions">
             <button type="button" class="trait-picker__cancel">취소</button>
-            <button type="button" class="trait-picker__confirm">
-              <span>경기 시작</span>
-              <strong>→</strong>
-            </button>
+            <button type="button" class="trait-picker__confirm"><span>경기 시작</span><strong>→</strong></button>
           </div>
         </footer>
       </section>
@@ -119,13 +125,10 @@ export class TraitSelectionModal {
   }
 
   mount() {
-    if (!document.body.contains(this.root)) {
-      document.body.appendChild(this.root);
-    }
+    if (!document.body.contains(this.root)) document.body.appendChild(this.root);
 
     document.addEventListener('click', this.handleStartCapture, true);
     document.addEventListener('keydown', this.handleKeydown);
-
     this.root.querySelector('.trait-picker__close')?.addEventListener('click', () => this.close());
     this.root.querySelector('.trait-picker__cancel')?.addEventListener('click', () => this.close());
     this.root.querySelector('.trait-picker__confirm')?.addEventListener('click', () => this.confirmAndStart());
@@ -133,9 +136,7 @@ export class TraitSelectionModal {
     this.root.querySelector('.trait-picker__backdrop')?.addEventListener('click', () => this.close());
 
     this.nameInput.addEventListener('input', () => {
-      if (this.nameInput.value.trim()) {
-        this.activeLocalId = null;
-      }
+      if (this.nameInput.value.trim()) this.activeLocalId = null;
       this.renderTraits(this.runtime.getAvailableTraits());
       this.renderProgress();
     });
@@ -143,22 +144,15 @@ export class TraitSelectionModal {
     this.nameInput.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter') return;
       event.preventDefault();
-      if (!this.nameInput.value.trim()) {
-        this.renderProgress('참가자 이름을 먼저 입력하세요.');
-        return;
-      }
-      this.renderProgress('이제 오른쪽에서 원하는 특성을 선택하세요.');
+      this.renderProgress(
+        this.nameInput.value.trim() ? '이제 오른쪽에서 원하는 특성을 선택하세요.' : '참가자 이름을 먼저 입력하세요.'
+      );
     });
   }
 
   open() {
-    const snapshot = this.runtime.getSnapshot();
-    if (snapshot.running) return;
-
-    if (this.participants.length === 0) {
-      this.loadStoredParticipants();
-    }
-
+    if (this.runtime.getSnapshot().running) return;
+    if (this.participants.length === 0) this.loadStoredParticipants();
     if (this.participants.length > 0 && this.activeLocalId === null && !this.nameInput.value.trim()) {
       this.activeLocalId = this.participants[0].localId;
     }
@@ -180,55 +174,68 @@ export class TraitSelectionModal {
 
   private handleStartCapture = (event: MouseEvent) => {
     const target = event.target as Element | null;
-    const startButton = target?.closest('#btnStart');
-    if (!startButton) return;
-
-    const snapshot = this.runtime.getSnapshot();
-    if (snapshot.running) return;
-
+    if (!target?.closest('#btnStart') || this.runtime.getSnapshot().running) return;
     event.preventDefault();
     event.stopImmediatePropagation();
     this.open();
   };
 
   private handleKeydown = (event: KeyboardEvent) => {
-    if (!this.isOpen) return;
-    if (event.key === 'Escape') this.close();
+    if (this.isOpen && event.key === 'Escape') this.close();
   };
 
   private loadStoredParticipants() {
     const traits = this.runtime.getAvailableTraits();
-    const storedNames = this.getStoredNames();
-    const storedTraits = this.getStoredTraitAssignments();
-
-    this.participants = storedNames.map((name, index) => ({
-      localId: this.nextLocalId++,
-      name,
-      definitionId: storedTraits[name] ?? traits[index % traits.length]?.definitionId ?? '',
-    }));
-
-    this.activeLocalId = this.participants[0]?.localId ?? null;
-  }
-
-  private getStoredNames() {
     const raw = localStorage.getItem(PARTICIPANT_STORAGE_KEY);
+    const storedTraits = this.getStoredTraitAssignments();
+    let stored: StoredParticipant[] = [];
+
     if (raw) {
       try {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed)) {
-          return parsed.map(String).map((name) => name.trim()).filter(Boolean);
+          stored = parsed
+            .map((item): StoredParticipant | null => {
+              if (typeof item === 'string') return { name: item };
+              if (item && typeof item === 'object' && 'name' in item) {
+                return {
+                  name: String(item.name),
+                  definitionId: 'definitionId' in item ? String(item.definitionId ?? '') : undefined,
+                  count: 'count' in item ? Number(item.count) : undefined,
+                };
+              }
+              return null;
+            })
+            .filter((item): item is StoredParticipant => Boolean(item?.name.trim()));
         }
       } catch {
-        // Fall back to legacy storage below.
+        stored = [];
       }
     }
 
-    const legacy = localStorage.getItem(LEGACY_NAME_STORAGE_KEY);
-    if (!legacy) return [];
-    return legacy
-      .split(/[,\r\n]/g)
-      .map((name) => name.replace(/\*\d+$/, '').replace(/\/\d+$/, '').trim())
-      .filter(Boolean);
+    if (stored.length === 0) {
+      const legacy = localStorage.getItem(LEGACY_NAME_STORAGE_KEY);
+      if (legacy) {
+        stored = legacy
+          .split(/[,\r\n]/g)
+          .map((entry) => {
+            const countMatch = entry.match(/\*(\d+)$/);
+            return {
+              name: entry.replace(/\*\d+$/, '').replace(/\/\d+$/, '').trim(),
+              count: countMatch ? Number(countMatch[1]) : 1,
+            };
+          })
+          .filter((item) => Boolean(item.name));
+      }
+    }
+
+    this.participants = stored.map((item, index) => ({
+      localId: this.nextLocalId++,
+      name: item.name.trim(),
+      definitionId: item.definitionId || storedTraits[item.name] || traits[index % Math.max(1, traits.length)]?.definitionId || '',
+      count: this.clampCount(item.count ?? 1),
+    }));
+    this.activeLocalId = this.participants[0]?.localId ?? null;
   }
 
   private getStoredTraitAssignments() {
@@ -250,8 +257,8 @@ export class TraitSelectionModal {
       localId: this.nextLocalId++,
       name,
       definitionId: trait.definitionId,
+      count: 1,
     };
-
     this.participants.push(participant);
     this.activeLocalId = participant.localId;
     this.nameInput.value = '';
@@ -263,9 +270,7 @@ export class TraitSelectionModal {
 
   private removeParticipant(localId: number) {
     this.participants = this.participants.filter((participant) => participant.localId !== localId);
-    if (this.activeLocalId === localId) {
-      this.activeLocalId = this.participants[0]?.localId ?? null;
-    }
+    if (this.activeLocalId === localId) this.activeLocalId = this.participants[0]?.localId ?? null;
     this.persistDraft();
     this.render();
   }
@@ -278,6 +283,19 @@ export class TraitSelectionModal {
     this.renderProgress();
   }
 
+  private changeParticipantCount(localId: number, delta: number) {
+    const participant = this.participants.find((item) => item.localId === localId);
+    if (!participant) return;
+    participant.count = this.clampCount(participant.count + delta);
+    this.persistDraft();
+    this.render();
+  }
+
+  private clampCount(value: number) {
+    if (!Number.isFinite(value)) return 1;
+    return Math.min(MAX_PARTICIPANT_COUNT, Math.max(1, Math.floor(value)));
+  }
+
   private render() {
     const traits = this.runtime.getAvailableTraits();
     this.renderParticipants(traits);
@@ -287,8 +305,10 @@ export class TraitSelectionModal {
   }
 
   private updateRosterCount() {
-    const count = this.root.querySelector<HTMLElement>('.trait-picker__roster-count');
-    if (count) count.textContent = String(this.participants.length);
+    const label = this.root.querySelector<HTMLElement>('.trait-picker__roster-count');
+    if (!label) return;
+    const total = this.participants.reduce((sum, participant) => sum + participant.count, 0);
+    label.textContent = `${this.participants.length}명 · ${total}개체`;
   }
 
   private renderParticipants(traits: MonsterTraitOption[]) {
@@ -298,11 +318,7 @@ export class TraitSelectionModal {
     if (this.participants.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'trait-picker__empty';
-      empty.innerHTML = `
-        <span>+</span>
-        <strong>아직 참가자가 없습니다</strong>
-        <p>위에 이름을 입력한 뒤 오른쪽 캐릭터 특성을 선택하세요.</p>
-      `;
+      empty.innerHTML = '<span>+</span><strong>아직 참가자가 없습니다</strong><p>이름을 입력한 뒤 오른쪽 캐릭터 특성을 선택하세요.</p>';
       this.participantList.appendChild(empty);
       return;
     }
@@ -346,10 +362,36 @@ export class TraitSelectionModal {
         this.renderTraits(traits);
       });
       input.addEventListener('input', () => this.renameParticipant(participant.localId, input.value));
-
       const traitLabel = document.createElement('small');
       traitLabel.innerHTML = `<span>${visual?.icon ?? '•'}</span>${this.escapeHtml(trait?.selectionName ?? '특성 미선택')}`;
       copy.append(input, traitLabel);
+
+      const countControl = document.createElement('div');
+      countControl.className = 'trait-picker__count-control';
+      const minus = document.createElement('button');
+      minus.type = 'button';
+      minus.className = 'trait-picker__count-button';
+      minus.textContent = '−';
+      minus.disabled = participant.count <= 1;
+      minus.setAttribute('aria-label', `${participant.name} 수량 줄이기`);
+      minus.addEventListener('click', (event) => {
+        event.stopPropagation();
+        this.changeParticipantCount(participant.localId, -1);
+      });
+      const count = document.createElement('strong');
+      count.className = 'trait-picker__count-value';
+      count.textContent = String(participant.count);
+      const plus = document.createElement('button');
+      plus.type = 'button';
+      plus.className = 'trait-picker__count-button';
+      plus.textContent = '+';
+      plus.disabled = participant.count >= MAX_PARTICIPANT_COUNT;
+      plus.setAttribute('aria-label', `${participant.name} 수량 늘리기`);
+      plus.addEventListener('click', (event) => {
+        event.stopPropagation();
+        this.changeParticipantCount(participant.localId, 1);
+      });
+      countControl.append(minus, count, plus);
 
       const remove = document.createElement('button');
       remove.type = 'button';
@@ -358,7 +400,7 @@ export class TraitSelectionModal {
       remove.textContent = '×';
       remove.addEventListener('click', () => this.removeParticipant(participant.localId));
 
-      row.append(selector, copy, remove);
+      row.append(selector, copy, countControl, remove);
       this.participantList.appendChild(row);
     });
   }
@@ -405,14 +447,12 @@ export class TraitSelectionModal {
       `;
       card.addEventListener('click', () => {
         if (this.addParticipantWithTrait(trait)) return;
-
         const current = this.getActiveParticipant();
         if (!current) {
           this.renderProgress('왼쪽에 참가자 이름을 입력한 뒤 특성을 선택하세요.');
           this.nameInput.focus();
           return;
         }
-
         current.definitionId = trait.definitionId;
         this.persistDraft();
         this.render();
@@ -422,21 +462,18 @@ export class TraitSelectionModal {
   }
 
   private renderProgress(message?: string) {
-    const validCount = this.participants.filter((participant) => participant.name.trim()).length;
+    const total = this.participants.reduce((sum, participant) => sum + participant.count, 0);
     if (message) {
       this.progressLabel.textContent = message;
       this.progressLabel.classList.add('is-warning');
       return;
     }
-
     this.progressLabel.classList.remove('is-warning');
     if (this.nameInput.value.trim()) {
       this.progressLabel.textContent = '오른쪽에서 특성을 선택하면 참가자가 바로 추가됩니다.';
       return;
     }
-
-    this.progressLabel.textContent =
-      validCount === 0 ? '참가자를 1명 이상 추가하면 경기를 시작할 수 있습니다.' : `${validCount}명 참가자 준비 완료`;
+    this.progressLabel.textContent = total === 0 ? '참가자를 1명 이상 추가하면 경기를 시작할 수 있습니다.' : `총 ${total}개체 준비 완료`;
   }
 
   private applyAutomaticAssignment() {
@@ -446,7 +483,6 @@ export class TraitSelectionModal {
       this.nameInput.focus();
       return;
     }
-
     this.participants.forEach((participant, index) => {
       participant.definitionId = traits[index % traits.length].definitionId;
     });
@@ -456,7 +492,11 @@ export class TraitSelectionModal {
 
   private confirmAndStart() {
     const validParticipants = this.participants
-      .map((participant, index) => ({ ...participant, name: participant.name.trim() || `참가자 ${index + 1}` }))
+      .map((participant, index) => ({
+        ...participant,
+        name: participant.name.trim() || `참가자 ${index + 1}`,
+        count: this.clampCount(participant.count),
+      }))
       .filter((participant) => Boolean(participant.name));
 
     if (validParticipants.length === 0) {
@@ -466,17 +506,21 @@ export class TraitSelectionModal {
     }
 
     const traits = this.runtime.getAvailableTraits();
-    const names = validParticipants.map((participant) => participant.name);
+    const expandedAssignments = validParticipants.flatMap((participant) =>
+      Array.from({ length: participant.count }, () => ({
+        name: participant.name,
+        definitionId: participant.definitionId,
+      }))
+    );
+
     this.participants = validParticipants;
-    this.options.setParticipants(names);
+    this.options.setParticipants(expandedAssignments.map((assignment) => assignment.name));
 
     const snapshot = this.runtime.getSnapshot();
     snapshot.monsters.forEach((monster, index) => {
-      const assignment = validParticipants[index];
-      const definitionId = assignment?.definitionId || traits[index % traits.length]?.definitionId;
-      if (definitionId) {
-        this.runtime.setTraitForMarble(monster.marbleId, definitionId);
-      }
+      const assignment = expandedAssignments[index];
+      const definitionId = assignment?.definitionId || traits[index % Math.max(1, traits.length)]?.definitionId;
+      if (definitionId) this.runtime.setTraitForMarble(monster.marbleId, definitionId);
     });
 
     this.persistDraft();
@@ -489,18 +533,27 @@ export class TraitSelectionModal {
   }
 
   private persistDraft() {
-    const names = this.participants.map((participant) => participant.name.trim()).filter(Boolean);
-    const traitAssignments = this.participants.reduce<Record<string, string>>((acc, participant) => {
-      if (participant.name.trim()) acc[participant.name.trim()] = participant.definitionId;
+    const storedParticipants = this.participants
+      .filter((participant) => participant.name.trim())
+      .map((participant) => ({
+        name: participant.name.trim(),
+        definitionId: participant.definitionId,
+        count: participant.count,
+      }));
+    const traitAssignments = storedParticipants.reduce<Record<string, string>>((acc, participant) => {
+      acc[participant.name] = participant.definitionId;
       return acc;
     }, {});
+    const legacyNames = storedParticipants.map((participant) =>
+      participant.count > 1 ? `${participant.name}*${participant.count}` : participant.name
+    );
 
-    localStorage.setItem(PARTICIPANT_STORAGE_KEY, JSON.stringify(names));
+    localStorage.setItem(PARTICIPANT_STORAGE_KEY, JSON.stringify(storedParticipants));
     localStorage.setItem(TRAIT_STORAGE_KEY, JSON.stringify(traitAssignments));
-    localStorage.setItem(LEGACY_NAME_STORAGE_KEY, names.join(','));
+    localStorage.setItem(LEGACY_NAME_STORAGE_KEY, legacyNames.join(','));
 
-    const nameInput = document.querySelector<HTMLTextAreaElement>('#in_names');
-    if (nameInput) nameInput.value = names.join(',');
+    const legacyInput = document.querySelector<HTMLTextAreaElement>('#in_names');
+    if (legacyInput) legacyInput.value = legacyNames.join(',');
   }
 
   private escapeHtml(value: string) {
