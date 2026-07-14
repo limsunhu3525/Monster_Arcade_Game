@@ -5,13 +5,14 @@
   display: grid;
   place-items: center;
   padding: 28px;
-  overflow: hidden;
+  overflow: auto;
   background:
-    radial-gradient(circle at 18% 18%, rgba(109, 91, 255, 0.2), transparent 30%),
-    radial-gradient(circle at 80% 70%, rgba(0, 208, 255, 0.12), transparent 28%),
-    linear-gradient(145deg, rgba(6, 10, 18, 0.84), rgba(10, 14, 24, 0.7));
-  backdrop-filter: blur(8px);
+    radial-gradient(circle at 15% 16%, rgba(109, 91, 255, 0.22), transparent 30%),
+    radial-gradient(circle at 84% 76%, rgba(0, 208, 255, 0.14), transparent 28%),
+    linear-gradient(145deg, rgba(6, 10, 18, 0.95), rgba(10, 14, 24, 0.93));
+  backdrop-filter: blur(10px);
   transition: opacity 220ms ease, visibility 220ms ease;
+  font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .monster-start-screen.is-hidden {
@@ -22,125 +23,302 @@
 
 .monster-start-screen__glow {
   position: absolute;
-  width: 360px;
-  height: 360px;
+  width: 420px;
+  height: 420px;
   border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.35;
+  filter: blur(100px);
+  opacity: 0.28;
   pointer-events: none;
 }
 
 .monster-start-screen__glow--one {
-  top: -120px;
-  left: -80px;
+  top: -150px;
+  left: -100px;
   background: #7569ff;
 }
 
 .monster-start-screen__glow--two {
-  right: -100px;
-  bottom: -140px;
+  right: -120px;
+  bottom: -170px;
   background: #18c7ff;
 }
 
-.monster-start-card {
+.monster-home {
   position: relative;
-  width: min(720px, 100%);
-  padding: clamp(32px, 6vw, 64px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
+  width: min(1180px, 100%);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.11);
   border-radius: 32px;
-  background:
-    linear-gradient(145deg, rgba(20, 27, 42, 0.94), rgba(9, 14, 24, 0.94));
-  box-shadow:
-    0 36px 100px rgba(0, 0, 0, 0.5),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  background: linear-gradient(145deg, rgba(18, 25, 39, 0.97), rgba(8, 13, 23, 0.97));
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.5);
   color: #f7f9ff;
-  text-align: center;
-  font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
-.monster-start-card__eyebrow {
-  margin-bottom: 14px;
-  color: #9aa6ff;
-  font-size: 12px;
+.monster-home__hero {
+  padding: clamp(36px, 6vw, 72px);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background:
+    radial-gradient(circle at 25% 10%, rgba(117, 105, 255, 0.17), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), transparent);
+}
+
+.monster-home__eyebrow,
+.monster-home__settings-head span:first-child {
+  margin: 0 0 14px;
+  color: #9da8ff;
+  font-size: 11px;
   font-weight: 900;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.17em;
 }
 
-.monster-start-card h1 {
+.monster-home__hero h1 {
   margin: 0;
-  font-size: clamp(34px, 6vw, 64px);
-  line-height: 1.04;
-  letter-spacing: -0.045em;
+  font-size: clamp(38px, 5.6vw, 68px);
+  line-height: 1.03;
+  letter-spacing: -0.05em;
 }
 
-.monster-start-card p {
-  max-width: 560px;
-  margin: 20px auto 0;
-  color: #aab4c8;
-  font-size: clamp(14px, 2vw, 17px);
-  line-height: 1.7;
+.monster-home__description {
+  max-width: 610px;
+  margin: 22px 0 0;
+  color: #a8b2c5;
+  font-size: 15px;
+  line-height: 1.75;
 }
 
-.monster-start-card__chips {
+.monster-home__steps {
+  display: grid;
+  gap: 10px;
+  margin: 34px 0;
+}
+
+.monster-home__steps span {
   display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 8px;
-  margin: 26px 0 30px;
-}
-
-.monster-start-card__chips span {
-  padding: 8px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.045);
-  color: #cbd3e4;
-  font-size: 12px;
+  align-items: center;
+  gap: 11px;
+  color: #c3cad8;
+  font-size: 13px;
   font-weight: 800;
 }
 
-.monster-start-card__button {
-  display: inline-flex;
+.monster-home__steps strong {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(151, 164, 255, 0.32);
+  border-radius: 10px;
+  background: rgba(117, 105, 255, 0.11);
+  color: #acb6ff;
+  font-size: 11px;
+}
+
+.monster-home__primary {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  min-width: min(320px, 100%);
-  min-height: 58px;
-  padding: 0 26px;
+  width: min(430px, 100%);
+  min-height: 72px;
+  gap: 14px;
+  padding: 12px 18px;
   border: 1px solid rgba(151, 164, 255, 0.75);
-  border-radius: 18px;
-  background: linear-gradient(135deg, #5e72ff, #8b68ff);
+  border-radius: 20px;
+  background: linear-gradient(135deg, #596eff, #8a66ff);
   color: #fff;
-  box-shadow: 0 18px 42px rgba(91, 102, 255, 0.3);
-  font-size: 16px;
-  font-weight: 900;
+  box-shadow: 0 20px 48px rgba(91, 102, 255, 0.3);
+  text-align: left;
   cursor: pointer;
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
-.monster-start-card__button:hover {
+.monster-home__primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 24px 50px rgba(91, 102, 255, 0.38);
+  box-shadow: 0 26px 56px rgba(91, 102, 255, 0.38);
 }
 
-.monster-start-card__button-icon {
+.monster-home__primary-icon {
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.15);
   font-size: 13px;
 }
 
-.monster-start-card small {
-  display: block;
-  margin-top: 14px;
-  color: #707c91;
+.monster-home__primary span:nth-child(2) {
+  display: grid;
+  gap: 3px;
+}
+
+.monster-home__primary small {
+  color: rgba(255, 255, 255, 0.68);
+  font-size: 9px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+}
+
+.monster-home__primary strong {
+  font-size: 16px;
+}
+
+.monster-home__primary b {
+  font-size: 24px;
+}
+
+.monster-home__settings {
+  padding: 30px;
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.monster-home__settings-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.monster-home__settings-head h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+.monster-home__settings-badge {
+  padding: 7px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.045);
+  color: #8894a8 !important;
+  font-size: 10px !important;
+  font-weight: 800;
+  letter-spacing: 0 !important;
+}
+
+.monster-home__settings-controls .collapsible-rows {
+  display: grid !important;
+  gap: 12px;
+  max-height: none !important;
+  overflow: visible !important;
+}
+
+.monster-home__settings-controls .row {
+  display: grid;
+  gap: 10px;
+  padding: 15px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.075);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.monster-home__settings-controls .row > label,
+.monster-home__settings-controls .toggle-item label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #aeb7c7;
   font-size: 12px;
+  font-weight: 800;
+}
+
+.monster-home__settings-controls select,
+.monster-home__settings-controls input[type='number'] {
+  width: 100%;
+  min-height: 42px;
+  padding: 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(5, 9, 16, 0.68);
+  color: #f5f7fb;
   font-weight: 700;
+}
+
+.monster-home__settings-controls .row-toggles {
+  grid-template-columns: 1fr 1fr;
+}
+
+.monster-home__settings-controls .toggle-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.monster-home__settings-controls .btn-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr 70px;
+  gap: 6px;
+}
+
+.monster-home__settings-controls .btn-winner {
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.045);
+  color: #9fa9ba;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.monster-home__settings-controls .btn-winner.active {
+  border-color: rgba(132, 148, 255, 0.6);
+  background: rgba(105, 121, 255, 0.18);
+  color: #e9ecff;
+}
+
+.monster-home__settings-controls .row-theme {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.monster-home__settings-controls .theme {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+#settings {
+  display: none !important;
+}
+
+@media (max-width: 920px) {
+  .monster-home {
+    grid-template-columns: 1fr;
+  }
+
+  .monster-home__hero {
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
 }
 
 @media (max-width: 640px) {
   .monster-start-screen {
-    padding: 14px;
+    padding: 12px;
   }
 
-  .monster-start-card {
-    border-radius: 24px;
+  .monster-home {
+    border-radius: 22px;
+  }
+
+  .monster-home__hero,
+  .monster-home__settings {
+    padding: 24px 18px;
+  }
+
+  .monster-home__settings-controls .row-toggles {
+    grid-template-columns: 1fr;
+  }
+
+  .monster-home__settings-controls .btn-group {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .monster-home__settings-controls .btn-group input {
+    grid-column: 1 / -1;
   }
 }
