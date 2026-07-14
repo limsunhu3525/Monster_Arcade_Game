@@ -7,9 +7,13 @@ import { registerServiceWorker } from './registerServiceWorker';
 import { Roulette } from './roulette';
 import { MonsterSkillExecutor } from './skills/monsterSkillExecutor';
 
+const DEFAULT_GAME_SPEED = 0.65;
+
 registerServiceWorker();
 
 const roulette = new Roulette();
+roulette.setSpeed(DEFAULT_GAME_SPEED);
+
 const monsterRuntime = new MonsterRuntimeController();
 monsterRuntime.attach(roulette);
 
@@ -31,3 +35,4 @@ if (debugEnabled) {
 (window as any).options = options;
 (window as any).monsterRuntime = monsterRuntime;
 (window as any).monsterSkillExecutor = monsterSkillExecutor;
+(window as any).DEFAULT_GAME_SPEED = DEFAULT_GAME_SPEED;
