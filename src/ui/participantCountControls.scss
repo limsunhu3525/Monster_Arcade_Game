@@ -56,6 +56,35 @@
   white-space: nowrap;
 }
 
+@media (min-width: 821px) {
+  .trait-picker__dialog {
+    width: min(1100px, calc(100vw - 48px));
+  }
+
+  .trait-picker__body {
+    grid-template-columns: minmax(360px, 400px) minmax(0, 700px);
+  }
+
+  .trait-picker__participants {
+    min-width: 360px;
+  }
+
+  .trait-picker__traits {
+    padding-left: 18px;
+    padding-right: 18px;
+  }
+}
+
+@media (min-width: 821px) and (max-width: 1180px) {
+  .trait-picker__dialog {
+    width: calc(100vw - 32px);
+  }
+
+  .trait-picker__body {
+    grid-template-columns: minmax(340px, 38%) minmax(0, 62%);
+  }
+}
+
 @media (max-width: 820px) {
   .trait-picker__participant {
     grid-template-columns: 48px minmax(0, 1fr) auto 32px;
