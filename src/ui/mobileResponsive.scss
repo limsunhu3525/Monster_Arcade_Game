@@ -1,0 +1,369 @@
+/* Mobile safety layer: prevents overlap, clipping, and off-screen controls. */
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+img,
+canvas,
+video {
+  max-width: 100%;
+}
+
+@media (max-width: 900px) {
+  .monster-start-screen {
+    align-items: flex-start;
+    padding: 14px;
+  }
+
+  .monster-home {
+    width: min(100%, 760px);
+    grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .monster-home__hero {
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .trait-picker {
+    align-items: stretch;
+    padding: 10px;
+  }
+
+  .trait-picker__dialog {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    border-radius: 20px;
+  }
+
+  .trait-picker__header {
+    flex: 0 0 auto;
+    padding: 18px 18px 14px;
+  }
+
+  .trait-picker__header h2 {
+    font-size: clamp(22px, 6vw, 30px);
+  }
+
+  .trait-picker__subtitle {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .trait-picker__body {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+
+  .trait-picker__participants {
+    min-height: auto;
+    max-height: none;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .trait-picker__participant-list {
+    max-height: 42dvh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .trait-picker__traits {
+    overflow: visible;
+    padding: 18px 14px 22px;
+  }
+
+  .trait-picker__traits-head {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .trait-picker__active-participant {
+    justify-content: flex-start;
+    max-width: 100%;
+  }
+
+  .trait-picker__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+
+  .trait-picker__card {
+    grid-template-columns: 68px minmax(0, 1fr);
+    min-height: 138px;
+    padding: 13px;
+    gap: 11px;
+  }
+
+  .trait-picker__card-visual {
+    width: 68px;
+    height: 92px;
+  }
+
+  .trait-picker__card-copy strong {
+    font-size: 16px;
+  }
+
+  .trait-picker__card-copy span {
+    font-size: 11px;
+    line-height: 1.45;
+  }
+
+  .trait-picker__footer {
+    flex: 0 0 auto;
+    align-items: stretch;
+    flex-direction: column;
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .trait-picker__footer-actions {
+    width: 100%;
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  }
+
+  .trait-picker__cancel,
+  .trait-picker__confirm {
+    width: 100%;
+  }
+
+  .race-result {
+    align-items: flex-start;
+    padding: 10px;
+  }
+
+  .race-result__dialog {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    padding: 20px;
+    border-radius: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .monster-start-screen {
+    padding: 8px;
+  }
+
+  .monster-home {
+    border-radius: 18px;
+  }
+
+  .monster-home__hero,
+  .monster-home__settings {
+    padding: 20px 16px;
+  }
+
+  .monster-home__hero h1 {
+    font-size: clamp(34px, 12vw, 52px);
+  }
+
+  .monster-home__description {
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  .monster-home__steps {
+    margin: 24px 0;
+  }
+
+  .monster-home__primary {
+    grid-template-columns: 38px minmax(0, 1fr) auto;
+    min-height: 64px;
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  .monster-home__settings-head {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .monster-home__settings-badge {
+    align-self: flex-start;
+  }
+
+  .monster-home__settings-controls .row-toggles {
+    grid-template-columns: 1fr;
+  }
+
+  .monster-home__settings-controls .btn-group {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .monster-home__settings-controls .btn-group input {
+    grid-column: 1 / -1;
+  }
+
+  .trait-picker {
+    padding: 0;
+  }
+
+  .trait-picker__dialog {
+    min-height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+  }
+
+  .trait-picker__header {
+    padding: 16px 14px 12px;
+  }
+
+  .trait-picker__close {
+    width: 38px;
+    height: 38px;
+    flex-basis: 38px;
+  }
+
+  .trait-picker__section-head {
+    padding: 14px 12px 10px;
+    align-items: flex-start;
+  }
+
+  .trait-picker__auto {
+    max-width: 130px;
+    text-align: right;
+    line-height: 1.35;
+  }
+
+  .trait-picker__add {
+    padding: 0 12px 12px;
+  }
+
+  .trait-picker__name-input {
+    height: 48px;
+    font-size: 16px;
+  }
+
+  .trait-picker__roster-head {
+    padding: 0 12px 8px;
+  }
+
+  .trait-picker__participant-list {
+    max-height: 38dvh;
+    padding: 4px 8px 14px;
+  }
+
+  .trait-picker__participant {
+    grid-template-columns: 48px minmax(0, 1fr) 30px;
+    grid-template-areas:
+      'avatar copy remove'
+      'avatar count remove';
+    gap: 8px 10px;
+    min-height: 82px;
+    padding: 10px;
+  }
+
+  .trait-picker__participant-select {
+    grid-area: avatar;
+  }
+
+  .trait-picker__participant-copy {
+    grid-area: copy;
+  }
+
+  .trait-picker__count-control {
+    grid-area: count;
+    justify-self: start;
+    grid-template-columns: 30px 30px 30px;
+    margin-top: 2px;
+  }
+
+  .trait-picker__count-button {
+    width: 30px;
+    height: 30px;
+  }
+
+  .trait-picker__participant-remove {
+    grid-area: remove;
+    align-self: center;
+  }
+
+  .trait-picker__participant-copy input {
+    font-size: 15px;
+  }
+
+  .trait-picker__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trait-picker__card {
+    grid-template-columns: 76px minmax(0, 1fr);
+    min-height: 132px;
+  }
+
+  .trait-picker__card-visual {
+    width: 76px;
+    height: 96px;
+  }
+
+  .trait-picker__card-action {
+    min-height: 40px;
+    font-size: 12px;
+  }
+
+  .trait-picker__footer-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .race-result__winner strong {
+    font-size: 26px;
+    overflow-wrap: anywhere;
+  }
+
+  .race-result__item {
+    grid-template-columns: 34px minmax(0, 1fr);
+  }
+
+  .race-result__trait {
+    grid-column: 2;
+  }
+
+  .race-result__actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .race-result__close,
+  .race-result__setup {
+    width: 100%;
+  }
+}
+
+@media (max-width: 380px) {
+  .monster-home__hero,
+  .monster-home__settings {
+    padding: 16px 12px;
+  }
+
+  .trait-picker__header h2 {
+    font-size: 21px;
+  }
+
+  .trait-picker__participant {
+    grid-template-columns: 44px minmax(0, 1fr) 28px;
+  }
+
+  .trait-picker__participant-avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .trait-picker__count-control {
+    grid-template-columns: 28px 26px 28px;
+  }
+
+  .trait-picker__count-button {
+    width: 28px;
+    height: 28px;
+  }
+}
