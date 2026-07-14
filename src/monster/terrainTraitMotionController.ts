@@ -1,11 +1,11 @@
 import type { IPhysics } from '../IPhysics';
 import type { MonsterRuntimeController } from './monsterRuntimeController';
 
-const BOOST_INTERVAL_MS = 220;
-const EARTH_SLOPE_MULTIPLIER = 1.045;
-const ICE_SLOPE_MULTIPLIER = 1.07;
+const BOOST_INTERVAL_MS = 260;
+const EARTH_SLOPE_MULTIPLIER = 1.035;
+const ICE_SLOPE_MULTIPLIER = 1.04;
 const MAX_EARTH_SPEED = 16;
-const MAX_ICE_SPEED = 19;
+const MAX_ICE_SPEED = 17;
 
 export class TerrainTraitMotionController {
   private elapsedMs = 0;
