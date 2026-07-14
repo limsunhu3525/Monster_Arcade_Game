@@ -37,6 +37,8 @@ export interface SkillDefinition {
 export interface SkillRuntimeState {
   skillId: SkillType;
   remainingUses: number;
+  /** Absolute race-time timestamps, in milliseconds, for scheduled activations. */
+  scheduledUsesMs?: number[];
   nextScheduledAtMs?: number;
   lastUsedAtMs?: number;
 }
