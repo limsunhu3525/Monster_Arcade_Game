@@ -15,6 +15,7 @@ import { MonsterSkillExecutor } from './skills/monsterSkillExecutor';
 import { applyMonsterArcadeBranding } from './ui/branding';
 import { cleanupLegacyUi } from './ui/legacyUiCleanup';
 import './ui/mobileResponsive.scss';
+import { MobileTraitSetupController } from './ui/mobileTraitSetupController';
 import { ResultModal } from './ui/resultModal';
 import './ui/selectionImageQuality.scss';
 import './ui/setupFlowOverrides.scss';
@@ -55,6 +56,9 @@ const traitSelectionModal = new TraitSelectionModal(monsterRuntime, {
   startRace: startRaceFromSetup,
 });
 traitSelectionModal.mount();
+
+const mobileTraitSetupController = new MobileTraitSetupController();
+mobileTraitSetupController.mount();
 
 startScreen.mount(() => {
   startScreen.hide();
@@ -115,6 +119,7 @@ if (debugEnabled) {
 (window as any).monsterCollisionReactionSystem = monsterCollisionReactionSystem;
 (window as any).collisionReactionVfxController = collisionReactionVfxController;
 (window as any).traitSelectionModal = traitSelectionModal;
+(window as any).mobileTraitSetupController = mobileTraitSetupController;
 (window as any).resultModal = resultModal;
 (window as any).startScreen = startScreen;
 (window as any).DEFAULT_GAME_SPEED = DEFAULT_GAME_SPEED;
