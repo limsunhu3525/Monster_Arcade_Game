@@ -1,6 +1,7 @@
 import type { Marble } from '../marble';
 import { createMonsterInstance, type MonsterInstance } from './monsterInstance';
 import { getMonsterDefinition } from './monsterRegistry';
+import { getMonsterVisualIdentity } from './monsterVisualIdentity';
 
 export interface MarbleMonsterBinding {
   marble: Marble;
@@ -17,6 +18,16 @@ export const bindMarbleToMonster = (
   if (!definition) {
     throw new Error(`Unknown monster definition: ${definitionId}`);
   }
+
+  const visual = getMonsterVisualIdentity(definition.element);
+  marble.setTraitVisual({
+    traitName: definition.selectionName,
+    icon: visual.icon,
+    primaryColor: visual.primaryColor,
+    secondaryColor: visual.secondaryColor,
+    glowColor: visual.glowColor,
+    spriteUrl: definition.spriteUrl,
+  });
 
   return {
     marble,
