@@ -5,12 +5,20 @@ interface GoalEventDetail {
   winner?: string;
 }
 
+interface ResultModalOptions {
+  showHome(): void;
+  openSetup(): void;
+}
+
 export class ResultModal {
   private root: HTMLDivElement;
   private winnerLabel: HTMLDivElement;
   private list: HTMLDivElement;
 
-  constructor(private runtime: MonsterRuntimeController) {
+  constructor(
+    private runtime: MonsterRuntimeController,
+    private options: ResultModalOptions
+  ) {
     this.root = document.createElement('div');
     this.root.className = 'race-result';
     this.root.setAttribute('aria-hidden', 'true');
@@ -22,7 +30,7 @@ export class ResultModal {
         <div class="race-result__winner"></div>
         <div class="race-result__list"></div>
         <footer class="race-result__actions">
-          <button type="button" class="race-result__close">확인</button>
+          <button type="button" class="race-result__close">홈으로 돌아가기</button>
           <button type="button" class="race-result__setup">다음 경기 설정</button>
         </footer>
       </section>
@@ -43,14 +51,15 @@ export class ResultModal {
       document.body.appendChild(this.root);
     }
 
-    this.root.querySelector('.race-result__close')?.addEventListener('click', () => this.close());
+    this.root.querySelector('.race-result__close')?.addEventListener('click', () => {
+      this.close();
+      this.options.showHome();
+    });
+
     this.root.querySelector('.race-result__setup')?.addEventListener('click', () => {
       this.close();
-      document.querySelector('#settings')?.classList.remove('hide');
-      document.querySelector('#donate')?.classList.remove('hide');
-      setTimeout(() => document.querySelector<HTMLButtonElement>('#btnStart')?.focus(), 0);
+      this.options.openSetup();
     });
-    this.root.querySelector('.race-result__backdrop')?.addEventListener('click', () => this.close());
 
     roulette.addEventListener(
       'goal',
