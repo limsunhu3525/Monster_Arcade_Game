@@ -7,6 +7,11 @@ export interface MarblePhysicsProfile {
   restitutionMultiplier?: number;
 }
 
+export interface MarbleCollisionPair {
+  a: number;
+  b: number;
+}
+
 export interface IPhysics {
   init(): Promise<void>;
 
@@ -37,6 +42,8 @@ export interface IPhysics {
   setMarbleLinearDamping(id: number, damping: number): void;
 
   isMarbleTouchingObstacle(id: number): boolean;
+
+  getMarbleCollisionPairs(): MarbleCollisionPair[];
 
   getEntities(): MapEntityState[];
 
