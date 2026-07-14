@@ -25,14 +25,12 @@ export class StartScreen {
     `;
   }
 
-  mount() {
+  mount(onStart: () => void) {
     if (!document.body.contains(this.root)) {
       document.body.appendChild(this.root);
     }
 
-    this.root.querySelector('.monster-start-card__button')?.addEventListener('click', () => {
-      document.querySelector<HTMLButtonElement>('#btnStart')?.click();
-    });
+    this.root.querySelector('.monster-start-card__button')?.addEventListener('click', onStart);
   }
 
   hide() {
