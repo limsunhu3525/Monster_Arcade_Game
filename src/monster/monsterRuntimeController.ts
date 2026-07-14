@@ -8,6 +8,13 @@ const DEFAULT_RACE_DURATION_MS = 30_000;
 const SCHEDULE_START_MS = 3_000;
 const SCHEDULE_END_MS = 28_000;
 
+export interface MonsterTraitOption {
+  definitionId: string;
+  selectionName: string;
+  selectionDescription: string;
+  element: string;
+}
+
 export interface MonsterRuntimeSnapshot {
   raceTimeMs: number;
   running: boolean;
@@ -16,6 +23,8 @@ export interface MonsterRuntimeSnapshot {
     name: string;
     definitionId: string;
     displayName: string;
+    selectionName: string;
+    selectionDescription: string;
     element: string;
     rank: number;
     skills: Array<{
@@ -82,6 +91,39 @@ export class MonsterRuntimeController extends EventTarget {
     }
   }
 
+  getAvailableTraits(): MonsterTraitOption[] {
+    return getAllMonsterDefinitions().map((definition) => ({
+      definitionId: definition.id,
+      selectionName: definition.selectionName,
+      selectionDescription: definition.selectionDescription,
+      element: definition.element,
+    }));
+  }
+
+  /**
+   * Pre-race trait assignment hook for the future trait picker UI.
+   * A trait cannot be changed while a race is running.
+   */
+  setTraitForMarble(marbleId: number, definitionId: string): boolean {
+    if (this.running) {
+      throw new Error('Monster traits cannot be changed while a race is running.');
+    }
+
+    const bindingIndex = this.bindings.findIndex(({ marble }) => marble.id === marbleId);
+    const definition = getMonsterDefinition(definitionId);
+    if (bindingIndex < 0 || !definition) return false;
+
+    const marble = this.bindings[bindingIndex].marble;
+    this.bindings[bindingIndex] = bindMarbleToMonster(marble, definition.id, `${definition.id}-${marble.id}`);
+    this.resetRaceState(false);
+
+    const snapshot = this.getSnapshot();
+    this.dispatchEvent(new CustomEvent('traitchange', { detail: snapshot }));
+    // Reuse rosterchange so existing systems such as physics profile setup are refreshed.
+    this.dispatchEvent(new CustomEvent('rosterchange', { detail: snapshot }));
+    return true;
+  }
+
   getSnapshot(): MonsterRuntimeSnapshot {
     return {
       raceTimeMs: this.raceTimeMs,
@@ -93,6 +135,8 @@ export class MonsterRuntimeController extends EventTarget {
           name: marble.name,
           definitionId: monster.definitionId,
           displayName: definition?.displayName ?? monster.definitionId,
+          selectionName: definition?.selectionName ?? monster.definitionId,
+          selectionDescription: definition?.selectionDescription ?? '',
           element: definition?.element ?? 'UNKNOWN',
           rank: monster.currentRank ?? 0,
           skills: monster.skills.map((skill) => {
