@@ -1,6 +1,6 @@
 import Box2DFactory from 'box2d-wasm';
 import type { StageDef } from './data/maps';
-import type { IPhysics, MarblePhysicsProfile } from './IPhysics';
+import type { IPhysics, MarbleCollisionPair, MarblePhysicsProfile } from './IPhysics';
 import type { MapEntity, MapEntityState } from './types/MapEntity.type';
 
 export class Box2dPhysics implements IPhysics {
@@ -208,6 +208,31 @@ export class Box2dPhysics implements IPhysics {
       guard += 1;
     }
     return false;
+  }
+
+  getMarbleCollisionPairs(): MarbleCollisionPair[] {
+    const idByBody = new Map<Box2D.b2Body, number>();
+    Object.entries(this.marbleMap).forEach(([id, body]) => idByBody.set(body, Number(id)));
+
+    const pairs = new Map<string, MarbleCollisionPair>();
+    Object.entries(this.marbleMap).forEach(([idString, body]) => {
+      const a = Number(idString);
+      let edge = (body as any).GetContactList?.();
+      let guard = 0;
+
+      while (edge && guard < 64) {
+        const b = idByBody.get(edge.other);
+        if (b !== undefined && b !== a && edge.contact?.IsTouching?.()) {
+          const first = Math.min(a, b);
+          const second = Math.max(a, b);
+          pairs.set(`${first}:${second}`, { a: first, b: second });
+        }
+        edge = edge.next;
+        guard += 1;
+      }
+    });
+
+    return [...pairs.values()];
   }
 
   getEntities(): MapEntityState[] {
