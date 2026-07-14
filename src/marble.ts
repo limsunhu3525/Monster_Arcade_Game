@@ -7,6 +7,16 @@ import { transformGuard } from './utils/transformGuard';
 import { rad } from './utils/utils';
 import { Vector } from './utils/Vector';
 
+export interface MarbleTraitVisual {
+  traitName: string;
+  icon: string;
+  primaryColor: string;
+  secondaryColor: string;
+  glowColor: string;
+  /** Optional future monster artwork. The renderer can use this when character assets are added. */
+  spriteUrl?: string;
+}
+
 export class Marble {
   type = 'marble' as const;
   name: string = '';
@@ -24,6 +34,7 @@ export class Marble {
   private _stuckTime = 0;
   private lastPosition: VectorLike = { x: 0, y: 0 };
   private theme: ColorTheme = Themes.dark;
+  private traitVisual?: MarbleTraitVisual;
 
   private physics: IPhysics;
 
@@ -70,6 +81,18 @@ export class Marble {
     this.id = order;
 
     physics.createMarble(order, 10.25 + (order % 10) * 0.6, maxLine - line + lineDelta);
+  }
+
+  setTraitVisual(visual?: MarbleTraitVisual) {
+    this.traitVisual = visual;
+  }
+
+  getTraitVisual() {
+    return this.traitVisual;
+  }
+
+  getTraitSpriteUrl() {
+    return this.traitVisual?.spriteUrl;
   }
 
   update(deltaTime: number) {
@@ -138,7 +161,7 @@ export class Marble {
   }
 
   private _renderMinimap(ctx: CanvasRenderingContext2D) {
-    ctx.fillStyle = this.color;
+    ctx.fillStyle = this.traitVisual?.primaryColor ?? this.color;
     this._drawMarbleBody(ctx, true);
   }
 
@@ -151,10 +174,9 @@ export class Marble {
   private _renderNormal(ctx: CanvasRenderingContext2D, zoom: number, outline: boolean, skin?: CanvasImageSource) {
     const hs = this.size / 2;
 
-    ctx.fillStyle = `hsl(${this.hue} 100% ${this.theme.marbleLightness + 25 * Math.min(1, this.impact / 500)}%`;
+    this._renderTraitAura(ctx, zoom);
+    ctx.fillStyle = `hsl(${this.hue} 100% ${this.theme.marbleLightness + 25 * Math.min(1, this.impact / 500)}%)`;
 
-    // ctx.shadowColor = this.color;
-    // ctx.shadowBlur = zoom / 2;
     if (skin) {
       transformGuard(ctx, () => {
         ctx.translate(this.x, this.y);
@@ -168,6 +190,7 @@ export class Marble {
     ctx.shadowColor = '';
     ctx.shadowBlur = 0;
     this._drawName(ctx, zoom);
+    this._renderTraitBadge(ctx, zoom);
 
     if (outline) {
       this._drawOutline(ctx, 2 / zoom);
@@ -178,9 +201,50 @@ export class Marble {
     }
   }
 
+  private _renderTraitAura(ctx: CanvasRenderingContext2D, zoom: number) {
+    if (!this.traitVisual) return;
+
+    ctx.save();
+    ctx.globalAlpha = 0.82;
+    ctx.strokeStyle = this.traitVisual.primaryColor;
+    ctx.lineWidth = 2.2 / Math.max(zoom, 0.001);
+    ctx.shadowColor = this.traitVisual.glowColor;
+    ctx.shadowBlur = 12 / Math.max(zoom, 0.001);
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size / 2 + 4 / Math.max(zoom, 0.001), 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  private _renderTraitBadge(ctx: CanvasRenderingContext2D, zoom: number) {
+    if (!this.traitVisual) return;
+
+    transformGuard(ctx, () => {
+      const safeZoom = Math.max(zoom, 0.001);
+      ctx.translate(this.x, this.y - this.size / 2 - 10 / safeZoom);
+      ctx.scale(1 / safeZoom, 1 / safeZoom);
+
+      ctx.beginPath();
+      ctx.arc(0, 0, 8, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(10, 14, 22, 0.9)';
+      ctx.fill();
+      ctx.strokeStyle = this.traitVisual!.primaryColor;
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.font = '11px "Apple Color Emoji", "Segoe UI Emoji", sans-serif';
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText(this.traitVisual!.icon, 0, 0.5);
+    });
+  }
+
   private _drawName(ctx: CanvasRenderingContext2D, zoom: number) {
     transformGuard(ctx, () => {
       ctx.font = `12pt sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'top';
       ctx.strokeStyle = 'black';
       ctx.lineWidth = 2;
       ctx.fillStyle = this.color;
@@ -201,7 +265,7 @@ export class Marble {
   }
 
   private _renderCoolTime(ctx: CanvasRenderingContext2D, zoom: number) {
-    ctx.strokeStyle = this.theme.coolTimeIndicator;
+    ctx.strokeStyle = this.traitVisual?.secondaryColor ?? this.theme.coolTimeIndicator;
     ctx.lineWidth = 1 / zoom;
     ctx.beginPath();
     ctx.arc(this.x, this.y, this.size / 2 + 2 / zoom, rad(270), rad(270 + (360 * this._coolTime) / this._maxCoolTime));
