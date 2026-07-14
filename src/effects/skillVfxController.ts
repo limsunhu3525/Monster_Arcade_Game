@@ -1,7 +1,7 @@
 import type { GameObject } from '../gameObject';
 import type { IPhysics } from '../IPhysics';
 import { getMonsterDefinition } from '../monster/monsterRegistry';
-import type { MonsterRuntimeController, MonsterSkillDueDetail } from '../monster/monsterRuntimeController';
+import type { MonsterRuntimeController, MonsterSkillExecutedDetail } from '../monster/monsterRuntimeController';
 import { getSkillDefinition } from '../skills/skillRegistry';
 import { SkillActivationEffect, type SkillVfxStyle } from './skillActivationEffect';
 
@@ -12,12 +12,12 @@ export class SkillVfxController {
     private readonly addEffect: (effect: GameObject) => void
   ) {
     this.runtime.addEventListener(
-      'skilldue',
-      ((event: CustomEvent<MonsterSkillDueDetail>) => this.spawn(event.detail)) as EventListener
+      'skillexecuted',
+      ((event: CustomEvent<MonsterSkillExecutedDetail>) => this.spawn(event.detail)) as EventListener
     );
   }
 
-  private spawn(detail: MonsterSkillDueDetail) {
+  private spawn(detail: MonsterSkillExecutedDetail) {
     const physics = this.getPhysics();
     const skill = getSkillDefinition(detail.skillId as any);
     const monster = getMonsterDefinition(detail.definitionId);
