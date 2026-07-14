@@ -1,0 +1,67 @@
+.trait-picker__participant {
+  --trait-primary: #7f91ff;
+  --trait-secondary: #b7c1ff;
+}
+
+.trait-picker__participant.is-active {
+  border-color: color-mix(in srgb, var(--trait-primary) 68%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--trait-primary) 16%, transparent),
+    rgba(255, 255, 255, 0.025)
+  );
+  box-shadow: inset 3px 0 0 var(--trait-primary);
+}
+
+.trait-picker__participant-index {
+  border: 1px solid color-mix(in srgb, var(--trait-primary) 42%, transparent);
+  background: color-mix(in srgb, var(--trait-primary) 12%, rgba(255, 255, 255, 0.04));
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.trait-picker__participant-copy small {
+  color: color-mix(in srgb, var(--trait-primary) 76%, #a6b0c0);
+}
+
+.trait-picker__card {
+  --trait-primary: #7f91ff;
+  --trait-secondary: #b7c1ff;
+  --trait-glow: rgba(127, 145, 255, 0.35);
+}
+
+.trait-picker__card:hover {
+  border-color: color-mix(in srgb, var(--trait-primary) 48%, rgba(255, 255, 255, 0.16));
+  box-shadow: 0 10px 30px color-mix(in srgb, var(--trait-glow) 36%, transparent);
+}
+
+.trait-picker__card.is-selected {
+  border-color: var(--trait-primary);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--trait-primary) 18%, rgba(255, 255, 255, 0.025)),
+    color-mix(in srgb, var(--trait-secondary) 8%, rgba(255, 255, 255, 0.02))
+  );
+  box-shadow:
+    inset 0 0 0 1px color-mix(in srgb, var(--trait-primary) 24%, transparent),
+    0 14px 34px color-mix(in srgb, var(--trait-glow) 32%, transparent);
+}
+
+.trait-picker__card-icon {
+  border: 1px solid color-mix(in srgb, var(--trait-primary) 52%, transparent);
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--trait-primary) 20%, rgba(255, 255, 255, 0.04)),
+    color-mix(in srgb, var(--trait-secondary) 10%, rgba(255, 255, 255, 0.025))
+  );
+  box-shadow: inset 0 0 18px color-mix(in srgb, var(--trait-glow) 42%, transparent);
+}
+
+.trait-picker__card-copy small {
+  color: color-mix(in srgb, var(--trait-primary) 76%, #a9b3c3);
+}
+
+.trait-picker__card.is-selected .trait-picker__card-check {
+  background: var(--trait-primary);
+  box-shadow: 0 0 18px var(--trait-glow);
+}
