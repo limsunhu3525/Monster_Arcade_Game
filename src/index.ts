@@ -55,9 +55,17 @@ startScreen.mount(() => {
   traitSelectionModal.open();
 });
 
+const prepareNextRace = () => {
+  roulette.reset();
+};
+
 const resultModal = new ResultModal(monsterRuntime, {
-  showHome: () => startScreen.show(),
+  showHome: () => {
+    prepareNextRace();
+    startScreen.show();
+  },
   openSetup: () => {
+    prepareNextRace();
     startScreen.hide();
     traitSelectionModal.open();
   },
