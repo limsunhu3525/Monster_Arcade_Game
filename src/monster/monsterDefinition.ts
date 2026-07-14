@@ -10,7 +10,12 @@ export interface MonsterPhysicsStats {
 
 export interface MonsterDefinition {
   id: string;
+  /** Internal/debug display name used across the runtime. */
   displayName: string;
+  /** Short name shown in the future pre-race trait picker. */
+  selectionName: string;
+  /** Player-facing explanation of how this trait behaves in a race. */
+  selectionDescription: string;
   element: MonsterElement;
   spriteUrl?: string;
   stats: MonsterPhysicsStats;
