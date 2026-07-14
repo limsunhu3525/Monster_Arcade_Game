@@ -1,5 +1,7 @@
 import './mobileTraitSetup.scss';
 
+// Re-trigger Vercel preview deployment after the previous build-rate-limit window.
+
 type MobilePanel = 'participants' | 'traits';
 
 export class MobileTraitSetupController {
