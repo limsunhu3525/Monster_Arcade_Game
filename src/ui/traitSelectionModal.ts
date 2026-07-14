@@ -1,4 +1,5 @@
 import type { MonsterElement } from '../monster/monsterTypes';
+import { getDefaultMonsterSprite } from '../monster/monsterSpriteAssets';
 import type { MonsterRuntimeController, MonsterTraitOption } from '../monster/monsterRuntimeController';
 import { getMonsterVisualIdentity } from '../monster/monsterVisualIdentity';
 import './traitSelectionModal.scss';
@@ -48,9 +49,9 @@ export class TraitSelectionModal {
       <section class="trait-picker__dialog" role="dialog" aria-modal="true" aria-labelledby="trait-picker-title">
         <header class="trait-picker__header">
           <div>
-            <p class="trait-picker__kicker">PRE-RACE SETUP</p>
-            <h2 id="trait-picker-title">참가자 · 특성 설정</h2>
-            <p class="trait-picker__subtitle">참가자 이름을 추가하고, 각 참가자에게 원하는 특성을 지정한 뒤 레이스를 시작하세요.</p>
+            <p class="trait-picker__kicker">BUILD YOUR RACE</p>
+            <h2 id="trait-picker-title">참가자와 특성을 설정하세요</h2>
+            <p class="trait-picker__subtitle">이름을 입력한 뒤 오른쪽 캐릭터 특성을 선택하면 참가자가 바로 등록됩니다.</p>
           </div>
           <button type="button" class="trait-picker__close" aria-label="닫기">×</button>
         </header>
@@ -58,18 +59,31 @@ export class TraitSelectionModal {
         <div class="trait-picker__body">
           <aside class="trait-picker__participants">
             <div class="trait-picker__section-head">
-              <span>참가자</span>
-              <button type="button" class="trait-picker__auto">특성 자동 배정</button>
+              <div>
+                <span class="trait-picker__step">STEP 1</span>
+                <strong>참가자 이름</strong>
+              </div>
+              <button type="button" class="trait-picker__auto">전체 특성 자동 배정</button>
             </div>
             <div class="trait-picker__add">
-              <input type="text" class="trait-picker__name-input" placeholder="참가자 이름 입력" autocomplete="off" />
-              <button type="button" class="trait-picker__add-button">추가</button>
+              <input type="text" class="trait-picker__name-input" placeholder="이름을 입력하세요" autocomplete="off" maxlength="24" />
+              <p>이름을 입력하고 오른쪽 특성을 누르면 바로 추가됩니다.</p>
+            </div>
+            <div class="trait-picker__roster-head">
+              <span>등록된 참가자</span>
+              <strong class="trait-picker__roster-count">0</strong>
             </div>
             <div class="trait-picker__participant-list"></div>
           </aside>
 
           <main class="trait-picker__traits">
-            <div class="trait-picker__active-participant"></div>
+            <div class="trait-picker__traits-head">
+              <div>
+                <span class="trait-picker__step">STEP 2</span>
+                <strong>캐릭터 특성 선택</strong>
+              </div>
+              <div class="trait-picker__active-participant"></div>
+            </div>
             <div class="trait-picker__grid"></div>
           </main>
         </div>
@@ -78,7 +92,10 @@ export class TraitSelectionModal {
           <div class="trait-picker__progress"></div>
           <div class="trait-picker__footer-actions">
             <button type="button" class="trait-picker__cancel">취소</button>
-            <button type="button" class="trait-picker__confirm">경기 시작</button>
+            <button type="button" class="trait-picker__confirm">
+              <span>경기 시작</span>
+              <strong>→</strong>
+            </button>
           </div>
         </footer>
       </section>
@@ -113,12 +130,24 @@ export class TraitSelectionModal {
     this.root.querySelector('.trait-picker__cancel')?.addEventListener('click', () => this.close());
     this.root.querySelector('.trait-picker__confirm')?.addEventListener('click', () => this.confirmAndStart());
     this.root.querySelector('.trait-picker__auto')?.addEventListener('click', () => this.applyAutomaticAssignment());
-    this.root.querySelector('.trait-picker__add-button')?.addEventListener('click', () => this.addParticipantFromInput());
     this.root.querySelector('.trait-picker__backdrop')?.addEventListener('click', () => this.close());
+
+    this.nameInput.addEventListener('input', () => {
+      if (this.nameInput.value.trim()) {
+        this.activeLocalId = null;
+      }
+      this.renderTraits(this.runtime.getAvailableTraits());
+      this.renderProgress();
+    });
+
     this.nameInput.addEventListener('keydown', (event) => {
       if (event.key !== 'Enter') return;
       event.preventDefault();
-      this.addParticipantFromInput();
+      if (!this.nameInput.value.trim()) {
+        this.renderProgress('참가자 이름을 먼저 입력하세요.');
+        return;
+      }
+      this.renderProgress('이제 오른쪽에서 원하는 특성을 선택하세요.');
     });
   }
 
@@ -130,7 +159,7 @@ export class TraitSelectionModal {
       this.loadStoredParticipants();
     }
 
-    if (this.participants.length > 0 && this.activeLocalId === null) {
+    if (this.participants.length > 0 && this.activeLocalId === null && !this.nameInput.value.trim()) {
       this.activeLocalId = this.participants[0].localId;
     }
 
@@ -213,20 +242,14 @@ export class TraitSelectionModal {
     }
   }
 
-  private addParticipantFromInput() {
+  private addParticipantWithTrait(trait: MonsterTraitOption) {
     const name = this.nameInput.value.trim();
-    if (!name) {
-      this.renderProgress('이름을 입력한 뒤 추가하세요.');
-      this.nameInput.focus();
-      return;
-    }
+    if (!name) return false;
 
-    const traits = this.runtime.getAvailableTraits();
-    const defaultTrait = traits[this.participants.length % Math.max(1, traits.length)];
-    const participant = {
+    const participant: ParticipantAssignment = {
       localId: this.nextLocalId++,
       name,
-      definitionId: defaultTrait?.definitionId ?? '',
+      definitionId: trait.definitionId,
     };
 
     this.participants.push(participant);
@@ -235,6 +258,7 @@ export class TraitSelectionModal {
     this.persistDraft();
     this.render();
     this.nameInput.focus();
+    return true;
   }
 
   private removeParticipant(localId: number) {
@@ -259,6 +283,12 @@ export class TraitSelectionModal {
     this.renderParticipants(traits);
     this.renderTraits(traits);
     this.renderProgress();
+    this.updateRosterCount();
+  }
+
+  private updateRosterCount() {
+    const count = this.root.querySelector<HTMLElement>('.trait-picker__roster-count');
+    if (count) count.textContent = String(this.participants.length);
   }
 
   private renderParticipants(traits: MonsterTraitOption[]) {
@@ -268,7 +298,11 @@ export class TraitSelectionModal {
     if (this.participants.length === 0) {
       const empty = document.createElement('div');
       empty.className = 'trait-picker__empty';
-      empty.textContent = '아직 참가자가 없습니다. 이름을 입력하고 추가하세요.';
+      empty.innerHTML = `
+        <span>+</span>
+        <strong>아직 참가자가 없습니다</strong>
+        <p>위에 이름을 입력한 뒤 오른쪽 캐릭터 특성을 선택하세요.</p>
+      `;
       this.participantList.appendChild(empty);
       return;
     }
@@ -276,19 +310,25 @@ export class TraitSelectionModal {
     this.participants.forEach((participant, index) => {
       const trait = traitById.get(participant.definitionId);
       const visual = trait ? getMonsterVisualIdentity(trait.element as MonsterElement) : undefined;
+      const spriteUrl = trait ? getDefaultMonsterSprite(trait.element as MonsterElement) : undefined;
       const row = document.createElement('div');
       row.className = 'trait-picker__participant';
       row.classList.toggle('is-active', participant.localId === this.activeLocalId);
       if (visual) {
         row.style.setProperty('--trait-primary', visual.primaryColor);
         row.style.setProperty('--trait-secondary', visual.secondaryColor);
+        row.style.setProperty('--trait-glow', visual.glowColor);
       }
 
       const selector = document.createElement('button');
       selector.type = 'button';
       selector.className = 'trait-picker__participant-select';
-      selector.innerHTML = `<span class="trait-picker__participant-index">${visual?.icon ?? String(index + 1).padStart(2, '0')}</span>`;
+      selector.setAttribute('aria-label', `${participant.name} 선택`);
+      selector.innerHTML = spriteUrl
+        ? `<span class="trait-picker__participant-avatar"><img src="${spriteUrl}" alt="" /></span>`
+        : `<span class="trait-picker__participant-index">${visual?.icon ?? String(index + 1).padStart(2, '0')}</span>`;
       selector.addEventListener('click', () => {
+        this.nameInput.value = '';
         this.activeLocalId = participant.localId;
         this.render();
       });
@@ -299,13 +339,16 @@ export class TraitSelectionModal {
       input.type = 'text';
       input.value = participant.name;
       input.placeholder = `참가자 ${index + 1}`;
+      input.maxLength = 24;
       input.addEventListener('focus', () => {
+        this.nameInput.value = '';
         this.activeLocalId = participant.localId;
         this.renderTraits(traits);
       });
       input.addEventListener('input', () => this.renameParticipant(participant.localId, input.value));
+
       const traitLabel = document.createElement('small');
-      traitLabel.textContent = trait?.selectionName ?? '특성 미선택';
+      traitLabel.innerHTML = `<span>${visual?.icon ?? '•'}</span>${this.escapeHtml(trait?.selectionName ?? '특성 미선택')}`;
       copy.append(input, traitLabel);
 
       const remove = document.createElement('button');
@@ -322,14 +365,24 @@ export class TraitSelectionModal {
 
   private renderTraits(traits: MonsterTraitOption[]) {
     this.traitGrid.replaceChildren();
-    const activeParticipant = this.getActiveParticipant();
+    const pendingName = this.nameInput.value.trim();
+    const activeParticipant = pendingName ? undefined : this.getActiveParticipant();
 
-    this.activeParticipantLabel.innerHTML = activeParticipant
-      ? `<span>현재 선택</span><strong>${this.escapeHtml(activeParticipant.name || '이름 없음')}</strong>`
-      : '<span>참가자를 추가하거나 선택하세요</span>';
+    if (pendingName) {
+      this.activeParticipantLabel.innerHTML = `<span>새 참가자</span><strong>${this.escapeHtml(pendingName)}</strong>`;
+      this.activeParticipantLabel.classList.add('is-pending');
+    } else if (activeParticipant) {
+      this.activeParticipantLabel.innerHTML = `<span>특성 변경</span><strong>${this.escapeHtml(activeParticipant.name || '이름 없음')}</strong>`;
+      this.activeParticipantLabel.classList.remove('is-pending');
+    } else {
+      this.activeParticipantLabel.innerHTML = '<span>이름을 입력하면 특성을 선택할 수 있습니다</span>';
+      this.activeParticipantLabel.classList.remove('is-pending');
+    }
 
     traits.forEach((trait) => {
-      const visual = getMonsterVisualIdentity(trait.element as MonsterElement);
+      const element = trait.element as MonsterElement;
+      const visual = getMonsterVisualIdentity(element);
+      const spriteUrl = getDefaultMonsterSprite(element);
       const card = document.createElement('button');
       card.type = 'button';
       card.className = 'trait-picker__card';
@@ -338,19 +391,29 @@ export class TraitSelectionModal {
       card.style.setProperty('--trait-secondary', visual.secondaryColor);
       card.style.setProperty('--trait-glow', visual.glowColor);
       card.classList.toggle('is-selected', activeParticipant?.definitionId === trait.definitionId);
-      card.disabled = !activeParticipant;
       card.innerHTML = `
-        <span class="trait-picker__card-icon" aria-hidden="true">${visual.icon}</span>
+        <span class="trait-picker__card-visual">
+          ${spriteUrl ? `<img src="${spriteUrl}" alt="${this.escapeHtml(trait.selectionName)} 캐릭터" />` : `<span>${visual.icon}</span>`}
+          <i>${visual.icon}</i>
+        </span>
         <span class="trait-picker__card-copy">
           <small>${this.escapeHtml(visual.eyebrow)}</small>
           <strong>${this.escapeHtml(trait.selectionName)}</strong>
           <span>${this.escapeHtml(trait.selectionDescription)}</span>
         </span>
-        <span class="trait-picker__card-check">✓</span>
+        <span class="trait-picker__card-action">${pendingName ? '이 특성으로 추가' : activeParticipant ? '특성 변경' : '이름 입력 필요'}</span>
       `;
       card.addEventListener('click', () => {
-        if (!activeParticipant) return;
-        activeParticipant.definitionId = trait.definitionId;
+        if (this.addParticipantWithTrait(trait)) return;
+
+        const current = this.getActiveParticipant();
+        if (!current) {
+          this.renderProgress('왼쪽에 참가자 이름을 입력한 뒤 특성을 선택하세요.');
+          this.nameInput.focus();
+          return;
+        }
+
+        current.definitionId = trait.definitionId;
         this.persistDraft();
         this.render();
       });
@@ -367,13 +430,22 @@ export class TraitSelectionModal {
     }
 
     this.progressLabel.classList.remove('is-warning');
+    if (this.nameInput.value.trim()) {
+      this.progressLabel.textContent = '오른쪽에서 특성을 선택하면 참가자가 바로 추가됩니다.';
+      return;
+    }
+
     this.progressLabel.textContent =
-      validCount === 0 ? '참가자를 1명 이상 추가하면 시작할 수 있습니다.' : `${validCount}명 참가자 설정 완료`;
+      validCount === 0 ? '참가자를 1명 이상 추가하면 경기를 시작할 수 있습니다.' : `${validCount}명 참가자 준비 완료`;
   }
 
   private applyAutomaticAssignment() {
     const traits = this.runtime.getAvailableTraits();
-    if (traits.length === 0) return;
+    if (traits.length === 0 || this.participants.length === 0) {
+      this.renderProgress('먼저 참가자를 추가하세요.');
+      this.nameInput.focus();
+      return;
+    }
 
     this.participants.forEach((participant, index) => {
       participant.definitionId = traits[index % traits.length].definitionId;
