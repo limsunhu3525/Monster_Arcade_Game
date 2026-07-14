@@ -1,5 +1,6 @@
 import type { ActiveStatusEffect } from '../status/statusEffect';
 import type { SkillRuntimeState } from '../skills/skillDefinition';
+import { getSkillDefinition } from '../skills/skillRegistry';
 import type { MonsterDefinition } from './monsterDefinition';
 
 export interface MonsterInstance {
@@ -24,7 +25,7 @@ export const createMonsterInstance = (
   finished: false,
   skills: definition.skills.map((skillId) => ({
     skillId,
-    remainingUses: 0,
+    remainingUses: getSkillDefinition(skillId)?.maxUses ?? 0,
   })),
   activeStatusEffects: [],
 });
