@@ -43,12 +43,19 @@ export interface MonsterSkillDueDetail {
   definitionId: string;
   skillId: string;
   raceTimeMs: number;
+  scheduledAtMs: number;
+}
+
+export interface MonsterSkillExecutedDetail extends MonsterSkillDueDetail {
+  rank: number;
+  participantCount: number;
+  powerMultiplier: number;
 }
 
 /**
  * Transitional integration layer between the original Marble Roulette engine and
- * the new monster domain model. It deliberately leaves the original Roulette
- * implementation intact and wraps only public/runtime hooks.
+ * the monster domain model. Skill uses are only consumed after the executor
+ * confirms that a conditional skill actually fired.
  */
 export class MonsterRuntimeController extends EventTarget {
   private bindings: MarbleMonsterBinding[] = [];
@@ -85,7 +92,6 @@ export class MonsterRuntimeController extends EventTarget {
       this.update(deltaTime, roulette._marbles ?? []);
     };
 
-    // Support attaching after marbles have already been created.
     if ((roulette._marbles ?? []).length > 0) {
       this.bindMarbles(roulette._marbles);
     }
@@ -100,10 +106,6 @@ export class MonsterRuntimeController extends EventTarget {
     }));
   }
 
-  /**
-   * Pre-race trait assignment hook for the future trait picker UI.
-   * A trait cannot be changed while a race is running.
-   */
   setTraitForMarble(marbleId: number, definitionId: string): boolean {
     if (this.running) {
       throw new Error('Monster traits cannot be changed while a race is running.');
@@ -119,7 +121,6 @@ export class MonsterRuntimeController extends EventTarget {
 
     const snapshot = this.getSnapshot();
     this.dispatchEvent(new CustomEvent('traitchange', { detail: snapshot }));
-    // Reuse rosterchange so existing systems such as physics profile setup are refreshed.
     this.dispatchEvent(new CustomEvent('rosterchange', { detail: snapshot }));
     return true;
   }
@@ -140,10 +141,10 @@ export class MonsterRuntimeController extends EventTarget {
           element: definition?.element ?? 'UNKNOWN',
           rank: monster.currentRank ?? 0,
           skills: monster.skills.map((skill) => {
-            const definition = getSkillDefinition(skill.skillId);
+            const skillDefinition = getSkillDefinition(skill.skillId);
             return {
               skillId: skill.skillId,
-              displayName: definition?.displayName ?? skill.skillId,
+              displayName: skillDefinition?.displayName ?? skill.skillId,
               remainingUses: skill.remainingUses,
               nextScheduledAtMs: skill.nextScheduledAtMs,
               nextInMs:
@@ -155,6 +156,48 @@ export class MonsterRuntimeController extends EventTarget {
         };
       }),
     };
+  }
+
+  consumeSkillUse(detail: MonsterSkillDueDetail): boolean {
+    const skill = this.findRuntimeSkill(detail);
+    if (!skill || skill.remainingUses <= 0 || skill.nextScheduledAtMs === undefined) return false;
+
+    skill.lastUsedAtMs = this.raceTimeMs;
+    skill.remainingUses -= 1;
+    skill.scheduledUsesMs?.shift();
+    skill.nextScheduledAtMs = skill.scheduledUsesMs?.[0];
+    return true;
+  }
+
+  deferSkillUse(detail: MonsterSkillDueDetail, retryDelayMs: number = 450) {
+    const skill = this.findRuntimeSkill(detail);
+    if (!skill || skill.remainingUses <= 0) return;
+
+    const retryAt = this.raceTimeMs + Math.max(150, retryDelayMs);
+    if (!skill.scheduledUsesMs || skill.scheduledUsesMs.length === 0) {
+      skill.scheduledUsesMs = [retryAt];
+    } else {
+      skill.scheduledUsesMs[0] = retryAt;
+    }
+    skill.nextScheduledAtMs = retryAt;
+  }
+
+  emitSkillExecuted(detail: MonsterSkillDueDetail, powerMultiplier: number) {
+    const snapshot = this.getSnapshot();
+    const monster = snapshot.monsters.find((entry) => entry.marbleId === detail.marbleId);
+    const executedDetail: MonsterSkillExecutedDetail = {
+      ...detail,
+      raceTimeMs: this.raceTimeMs,
+      rank: monster?.rank ?? snapshot.monsters.length,
+      participantCount: snapshot.monsters.length,
+      powerMultiplier,
+    };
+    this.dispatchEvent(new CustomEvent<MonsterSkillExecutedDetail>('skillexecuted', { detail: executedDetail }));
+  }
+
+  private findRuntimeSkill(detail: MonsterSkillDueDetail): SkillRuntimeState | undefined {
+    const binding = this.bindings.find(({ monster }) => monster.instanceId === detail.monsterInstanceId);
+    return binding?.monster.skills.find((skill) => skill.skillId === detail.skillId);
   }
 
   private bindMarbles(marbles: Marble[]) {
@@ -237,25 +280,23 @@ export class MonsterRuntimeController extends EventTarget {
     marbleId: number,
     skill: SkillRuntimeState
   ) {
-    while (
-      skill.remainingUses > 0 &&
-      skill.nextScheduledAtMs !== undefined &&
-      this.raceTimeMs >= skill.nextScheduledAtMs
+    if (
+      skill.remainingUses <= 0 ||
+      skill.nextScheduledAtMs === undefined ||
+      this.raceTimeMs < skill.nextScheduledAtMs
     ) {
-      skill.lastUsedAtMs = skill.nextScheduledAtMs;
-      skill.remainingUses -= 1;
-      skill.scheduledUsesMs?.shift();
-      skill.nextScheduledAtMs = skill.scheduledUsesMs?.[0];
-
-      const detail: MonsterSkillDueDetail = {
-        marbleId,
-        monsterInstanceId,
-        definitionId,
-        skillId: skill.skillId,
-        raceTimeMs: this.raceTimeMs,
-      };
-      this.dispatchEvent(new CustomEvent<MonsterSkillDueDetail>('skilldue', { detail }));
+      return;
     }
+
+    const detail: MonsterSkillDueDetail = {
+      marbleId,
+      monsterInstanceId,
+      definitionId,
+      skillId: skill.skillId,
+      raceTimeMs: this.raceTimeMs,
+      scheduledAtMs: skill.nextScheduledAtMs,
+    };
+    this.dispatchEvent(new CustomEvent<MonsterSkillDueDetail>('skilldue', { detail }));
   }
 
   private resetRaceState(clearBindings: boolean = false) {
