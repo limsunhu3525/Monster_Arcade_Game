@@ -2,6 +2,7 @@ import './startScreen.scss';
 
 export class StartScreen {
   private root: HTMLDivElement;
+  private controlsAdopted = false;
 
   constructor() {
     this.root = document.createElement('div');
@@ -9,19 +10,42 @@ export class StartScreen {
     this.root.innerHTML = `
       <div class="monster-start-screen__glow monster-start-screen__glow--one"></div>
       <div class="monster-start-screen__glow monster-start-screen__glow--two"></div>
-      <section class="monster-start-card" aria-labelledby="monster-start-title">
-        <div class="monster-start-card__eyebrow">MONSTER ARCADE RACE</div>
-        <h1 id="monster-start-title">특성을 고르고<br />몬스터 레이스를 시작하세요</h1>
-        <p>참가자 이름을 입력하고, 각자 원하는 특성을 선택하면 바로 레이스에 참가할 수 있습니다.</p>
-        <div class="monster-start-card__chips" aria-hidden="true">
-          <span>불</span><span>물</span><span>바람</span><span>번개</span><span>얼음</span>
-        </div>
-        <button type="button" class="monster-start-card__button">
-          <span class="monster-start-card__button-icon">▶</span>
-          참가자 설정 시작
-        </button>
-        <small>이름 입력 → 특성 선택 → 경기 시작</small>
-      </section>
+
+      <main class="monster-home" aria-labelledby="monster-home-title">
+        <section class="monster-home__hero">
+          <p class="monster-home__eyebrow">MONSTER ARCADE RACE</p>
+          <h1 id="monster-home-title">나만의 몬스터를 고르고<br />레이스를 시작하세요</h1>
+          <p class="monster-home__description">
+            참가자 이름과 특성을 정하고, 맵과 경기 규칙을 설정한 뒤 몬스터 레이스를 시작하세요.
+          </p>
+
+          <div class="monster-home__steps" aria-label="게임 시작 순서">
+            <span><strong>1</strong> 경기 설정</span>
+            <span><strong>2</strong> 참가자 · 특성 선택</span>
+            <span><strong>3</strong> 레이스 시작</span>
+          </div>
+
+          <button type="button" class="monster-home__primary">
+            <span class="monster-home__primary-icon">▶</span>
+            <span>
+              <small>READY TO RACE</small>
+              <strong>참가자 설정 시작</strong>
+            </span>
+            <b>→</b>
+          </button>
+        </section>
+
+        <aside class="monster-home__settings" aria-label="경기 설정">
+          <div class="monster-home__settings-head">
+            <div>
+              <span>RACE SETTINGS</span>
+              <h2>경기 설정</h2>
+            </div>
+            <span class="monster-home__settings-badge">설정값 자동 유지</span>
+          </div>
+          <div class="monster-home__settings-controls"></div>
+        </aside>
+      </main>
     `;
   }
 
@@ -30,7 +54,20 @@ export class StartScreen {
       document.body.appendChild(this.root);
     }
 
-    this.root.querySelector('.monster-start-card__button')?.addEventListener('click', onStart);
+    this.root.querySelector('.monster-home__primary')?.addEventListener('click', onStart);
+    this.adoptLegacyControls();
+  }
+
+  private adoptLegacyControls() {
+    if (this.controlsAdopted) return;
+
+    const controlsHost = this.root.querySelector<HTMLElement>('.monster-home__settings-controls');
+    const legacyControls = document.querySelector<HTMLElement>('#settings .collapsible-rows');
+    if (!controlsHost || !legacyControls) return;
+
+    legacyControls.classList.remove('collapsed');
+    controlsHost.appendChild(legacyControls);
+    this.controlsAdopted = true;
   }
 
   hide() {
@@ -38,6 +75,7 @@ export class StartScreen {
   }
 
   show() {
+    this.adoptLegacyControls();
     this.root.classList.remove('is-hidden');
   }
 }
