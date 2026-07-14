@@ -1,0 +1,327 @@
+@media (max-width: 640px) {
+  .trait-picker.is-mobile-dedicated {
+    padding: 0 !important;
+    background: #070b13;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__backdrop {
+    display: none;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__dialog {
+    width: 100vw !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    display: grid;
+    grid-template-rows: auto auto minmax(0, 1fr) auto;
+    overflow: hidden !important;
+    background: linear-gradient(180deg, #111827 0%, #090e18 100%);
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__header {
+    min-height: 68px;
+    padding: max(12px, env(safe-area-inset-top)) 16px 10px !important;
+    align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__kicker,
+  .trait-picker.is-mobile-dedicated .trait-picker__subtitle {
+    display: none !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__header h2 {
+    font-size: 20px !important;
+    line-height: 1.2;
+    letter-spacing: -.03em;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__close {
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    border-radius: 13px;
+  }
+
+  .mobile-trait-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,.07);
+    background: rgba(7,11,19,.94);
+  }
+
+  .mobile-trait-nav__button {
+    min-height: 46px;
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 14px;
+    background: rgba(255,255,255,.035);
+    color: #7f8ba0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 900;
+  }
+
+  .mobile-trait-nav__button span {
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 8px;
+    background: rgba(255,255,255,.06);
+    font-size: 11px;
+  }
+
+  .mobile-trait-nav__button.is-active {
+    border-color: rgba(126,143,255,.55);
+    background: linear-gradient(135deg, rgba(92,110,255,.22), rgba(132,91,255,.18));
+    color: #f3f5ff;
+  }
+
+  .mobile-trait-nav__button.is-active span {
+    background: #6f7dff;
+    color: #fff;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__body {
+    display: block !important;
+    min-height: 0;
+    overflow: hidden !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__participants,
+  .trait-picker.is-mobile-dedicated .trait-picker__traits {
+    height: 100%;
+    min-height: 0;
+    border: 0 !important;
+  }
+
+  .trait-picker.is-mobile-dedicated[data-mobile-panel='participants'] .trait-picker__traits,
+  .trait-picker.is-mobile-dedicated[data-mobile-panel='traits'] .trait-picker__participants {
+    display: none !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__participants {
+    display: grid;
+    grid-template-rows: auto auto auto minmax(0,1fr);
+    overflow: hidden;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__section-head {
+    padding: 14px 14px 8px !important;
+    align-items: center;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__step {
+    display: none;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__section-head strong,
+  .trait-picker.is-mobile-dedicated .trait-picker__traits-head strong {
+    font-size: 17px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__auto {
+    max-width: none !important;
+    padding: 8px 10px;
+    border-radius: 10px;
+    background: rgba(255,255,255,.05);
+    font-size: 11px;
+    line-height: 1.2;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__add {
+    padding: 0 14px 10px !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__name-input {
+    height: 52px !important;
+    border-radius: 16px;
+    font-size: 17px !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__add p {
+    margin-top: 7px;
+    font-size: 10px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__roster-head {
+    padding: 4px 14px 8px !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__participant-list {
+    max-height: none !important;
+    min-height: 0;
+    padding: 4px 10px 18px !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__participant {
+    grid-template-columns: 54px minmax(0,1fr) 30px !important;
+    grid-template-areas:
+      'avatar copy remove'
+      'avatar count remove' !important;
+    min-height: 86px;
+    padding: 10px !important;
+    gap: 7px 10px;
+    border-radius: 16px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__participant-avatar {
+    width: 50px;
+    height: 50px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__participant-copy input {
+    font-size: 15px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__count-control {
+    grid-template-columns: 32px 30px 32px !important;
+    padding: 3px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__count-button {
+    width: 32px !important;
+    height: 32px !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__traits {
+    display: grid;
+    grid-template-rows: auto minmax(0,1fr);
+    padding: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__traits-head {
+    margin: 0 !important;
+    padding: 14px 14px 10px;
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between;
+    gap: 10px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__active-participant {
+    margin: 0;
+    max-width: 48%;
+    justify-content: flex-end;
+    text-align: right;
+    font-size: 11px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__grid {
+    grid-template-columns: repeat(2, minmax(0,1fr)) !important;
+    gap: 10px !important;
+    padding: 0 10px 18px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__card {
+    display: grid;
+    grid-template-columns: 1fr !important;
+    grid-template-rows: 94px auto 34px;
+    min-height: 0 !important;
+    padding: 10px !important;
+    gap: 8px;
+    border-radius: 16px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__card-visual {
+    width: 100% !important;
+    height: 94px !important;
+    border-radius: 14px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__card-visual img {
+    width: 88%;
+    height: 88%;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__card-copy {
+    min-width: 0;
+    text-align: center;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__card-copy small,
+  .trait-picker.is-mobile-dedicated .trait-picker__card-copy > span {
+    display: none !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__card-copy strong {
+    font-size: 15px !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__card-action {
+    grid-column: 1 !important;
+    min-height: 34px !important;
+    margin: 0;
+    font-size: 10px !important;
+    border-radius: 10px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__footer {
+    min-height: 74px;
+    padding: 10px 12px max(10px, env(safe-area-inset-bottom)) !important;
+    display: grid !important;
+    grid-template-columns: minmax(0,1fr) minmax(150px,1.25fr);
+    align-items: center !important;
+    gap: 10px !important;
+    border-top: 1px solid rgba(255,255,255,.08);
+    background: rgba(6,10,18,.98);
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__progress {
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__footer-actions {
+    display: block !important;
+    width: 100%;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__cancel {
+    display: none !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__confirm {
+    width: 100%;
+    min-height: 50px;
+    border-radius: 15px;
+  }
+}
+
+@media (max-width: 380px) {
+  .trait-picker.is-mobile-dedicated .trait-picker__header h2 {
+    font-size: 18px !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__grid {
+    gap: 8px !important;
+    padding-left: 8px;
+    padding-right: 8px;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__card {
+    grid-template-rows: 82px auto 32px;
+    padding: 8px !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__card-visual {
+    height: 82px !important;
+  }
+
+  .trait-picker.is-mobile-dedicated .trait-picker__footer {
+    grid-template-columns: minmax(0,.9fr) minmax(140px,1.1fr);
+  }
+}
