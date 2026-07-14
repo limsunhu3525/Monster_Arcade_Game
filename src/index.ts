@@ -5,7 +5,9 @@ import { CollisionReactionVfxController } from './effects/collisionReactionVfxCo
 import { SkillVfxController } from './effects/skillVfxController';
 import type { GameObject } from './gameObject';
 import type { IPhysics } from './IPhysics';
+import { EarthLightningDefenseController } from './monster/earthLightningDefenseController';
 import { MonsterRuntimeController } from './monster/monsterRuntimeController';
+import { TerrainTraitMotionController } from './monster/terrainTraitMotionController';
 import options from './options';
 import { registerServiceWorker } from './registerServiceWorker';
 import { Roulette } from './roulette';
@@ -80,8 +82,12 @@ const addEffect = (effect: GameObject) => {
   effectHost._effects?.push(effect);
 };
 
+const earthLightningDefenseController = new EarthLightningDefenseController(monsterRuntime, getPhysics);
 const monsterSkillExecutor = new MonsterSkillExecutor(monsterRuntime, getPhysics);
 const skillVfxController = new SkillVfxController(monsterRuntime, getPhysics, addEffect);
+
+const terrainTraitMotionController = new TerrainTraitMotionController(monsterRuntime, getPhysics);
+terrainTraitMotionController.attach(roulette);
 
 const monsterCollisionReactionSystem = new MonsterCollisionReactionSystem(monsterRuntime, getPhysics);
 monsterCollisionReactionSystem.attach(roulette);
@@ -100,8 +106,10 @@ if (debugEnabled) {
 (window as any).roulette = roulette;
 (window as any).options = options;
 (window as any).monsterRuntime = monsterRuntime;
+(window as any).earthLightningDefenseController = earthLightningDefenseController;
 (window as any).monsterSkillExecutor = monsterSkillExecutor;
 (window as any).skillVfxController = skillVfxController;
+(window as any).terrainTraitMotionController = terrainTraitMotionController;
 (window as any).monsterCollisionReactionSystem = monsterCollisionReactionSystem;
 (window as any).collisionReactionVfxController = collisionReactionVfxController;
 (window as any).traitSelectionModal = traitSelectionModal;
