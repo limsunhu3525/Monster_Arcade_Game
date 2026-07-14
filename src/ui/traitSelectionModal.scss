@@ -1,0 +1,400 @@
+html.trait-picker-open,
+html.trait-picker-open body {
+  overflow: hidden;
+}
+
+.trait-picker {
+  position: fixed;
+  inset: 0;
+  z-index: 100000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  color: #f5f7fb;
+  font-family: Inter, Pretendard, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+.trait-picker.is-open {
+  display: flex;
+}
+
+.trait-picker__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(3, 7, 14, 0.78);
+  backdrop-filter: blur(10px);
+}
+
+.trait-picker__dialog {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: min(1180px, calc(100vw - 48px));
+  max-height: min(820px, calc(100vh - 48px));
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 75% 0%, rgba(94, 108, 255, 0.14), transparent 34%),
+    linear-gradient(180deg, rgba(18, 24, 36, 0.98), rgba(9, 13, 21, 0.98));
+  box-shadow: 0 40px 120px rgba(0, 0, 0, 0.52);
+}
+
+.trait-picker__header {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 30px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.trait-picker__kicker {
+  margin: 0 0 8px;
+  color: #8d9dff;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+
+.trait-picker__header h2 {
+  margin: 0;
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.1;
+}
+
+.trait-picker__subtitle {
+  margin: 10px 0 0;
+  color: #9aa6ba;
+  font-size: 14px;
+}
+
+.trait-picker__close {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 42px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #dbe2ee;
+  font-size: 28px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.trait-picker__body {
+  display: grid;
+  grid-template-columns: minmax(220px, 280px) minmax(0, 1fr);
+  min-height: 0;
+  flex: 1;
+}
+
+.trait-picker__participants {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.018);
+}
+
+.trait-picker__section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 18px 12px;
+  color: #8e9aad;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.trait-picker__auto {
+  border: 0;
+  background: transparent;
+  color: #9faaff;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.trait-picker__participant-list {
+  min-height: 0;
+  overflow: auto;
+  padding: 4px 10px 16px;
+}
+
+.trait-picker__participant {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr) 18px;
+  align-items: center;
+  width: 100%;
+  gap: 10px;
+  margin: 4px 0;
+  padding: 12px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.trait-picker__participant:hover {
+  background: rgba(255, 255, 255, 0.045);
+}
+
+.trait-picker__participant.is-active {
+  border-color: rgba(136, 151, 255, 0.42);
+  background: rgba(112, 128, 255, 0.12);
+}
+
+.trait-picker__participant-index {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #8d99aa;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.trait-picker__participant-copy {
+  min-width: 0;
+}
+
+.trait-picker__participant-copy strong,
+.trait-picker__participant-copy small {
+  display: block;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.trait-picker__participant-copy strong {
+  color: #f4f7fb;
+  font-size: 14px;
+}
+
+.trait-picker__participant-copy small {
+  margin-top: 4px;
+  color: #8591a5;
+  font-size: 11px;
+}
+
+.trait-picker__participant-arrow {
+  color: #647085;
+  font-size: 22px;
+}
+
+.trait-picker__traits {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+  padding: 20px 22px 24px;
+}
+
+.trait-picker__active-participant {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.trait-picker__active-participant span {
+  color: #7f8ba0;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.trait-picker__active-participant strong {
+  color: #ffffff;
+  font-size: 18px;
+}
+
+.trait-picker__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.trait-picker__card {
+  position: relative;
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 24px;
+  align-items: start;
+  min-height: 132px;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.trait-picker__card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.055);
+}
+
+.trait-picker__card.is-selected {
+  border-color: rgba(123, 141, 255, 0.68);
+  background: linear-gradient(135deg, rgba(94, 112, 255, 0.18), rgba(255, 255, 255, 0.045));
+  box-shadow: inset 0 0 0 1px rgba(126, 143, 255, 0.14);
+}
+
+.trait-picker__card-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.07);
+  font-size: 27px;
+}
+
+.trait-picker__card-copy {
+  min-width: 0;
+}
+
+.trait-picker__card-copy small,
+.trait-picker__card-copy strong,
+.trait-picker__card-copy span {
+  display: block;
+}
+
+.trait-picker__card-copy small {
+  margin-bottom: 5px;
+  color: #7f8ba1;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.trait-picker__card-copy strong {
+  color: #f7f9fc;
+  font-size: 17px;
+}
+
+.trait-picker__card-copy span {
+  margin-top: 8px;
+  color: #9ba6b8;
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.trait-picker__card-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.06);
+  color: transparent;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.trait-picker__card.is-selected .trait-picker__card-check {
+  background: #7f91ff;
+  color: #ffffff;
+}
+
+.trait-picker__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 18px 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(5, 9, 15, 0.55);
+}
+
+.trait-picker__progress {
+  color: #8d98aa;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.trait-picker__footer-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.trait-picker__cancel,
+.trait-picker__confirm {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 13px;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.trait-picker__cancel {
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.04);
+  color: #b2bdce;
+}
+
+.trait-picker__confirm {
+  border: 1px solid rgba(143, 157, 255, 0.8);
+  background: linear-gradient(135deg, #6478ff, #8d70ff);
+  color: #ffffff;
+  box-shadow: 0 12px 30px rgba(88, 103, 255, 0.28);
+}
+
+@media (max-width: 820px) {
+  .trait-picker {
+    align-items: stretch;
+    padding: 10px;
+  }
+
+  .trait-picker__dialog {
+    width: 100%;
+    max-height: calc(100vh - 20px);
+    border-radius: 20px;
+  }
+
+  .trait-picker__header {
+    padding: 22px 20px 18px;
+  }
+
+  .trait-picker__body {
+    grid-template-columns: 1fr;
+    overflow: auto;
+  }
+
+  .trait-picker__participants {
+    max-height: 220px;
+    border-right: 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .trait-picker__traits {
+    overflow: visible;
+    padding: 18px 14px 20px;
+  }
+
+  .trait-picker__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .trait-picker__footer {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .trait-picker__footer-actions {
+    display: grid;
+    grid-template-columns: 1fr 1.4fr;
+  }
+}
