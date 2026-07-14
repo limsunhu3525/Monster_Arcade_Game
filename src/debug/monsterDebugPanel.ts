@@ -22,7 +22,7 @@ export class MonsterDebugPanel {
       'top:12px',
       'left:12px',
       'z-index:99999',
-      'width:min(430px,calc(100vw - 24px))',
+      'width:min(520px,calc(100vw - 24px))',
       'max-height:calc(100vh - 24px)',
       'overflow:auto',
       'padding:12px',
@@ -63,7 +63,7 @@ export class MonsterDebugPanel {
     }) as EventListener);
 
     this.runtime.addEventListener('rosterchange', (() => {
-      this.pushLog('Monster roster bound to marbles');
+      this.pushLog('Monster roster or trait assignment updated');
     }) as EventListener);
   }
 
@@ -98,7 +98,7 @@ export class MonsterDebugPanel {
         : 'no scheduled skill';
       const remaining = monster.skills.reduce((sum, skill) => sum + skill.remainingUses, 0);
 
-      return `#${String(monster.rank || '-').padStart(2, ' ')}  [${monster.element.padEnd(9, ' ')}] ${monster.name}  | uses ${remaining} | ${nextText}`;
+      return `#${String(monster.rank || '-').padStart(2, ' ')}  [${monster.selectionName}] ${monster.name}  | uses ${remaining} | ${nextText}`;
     });
 
     if (snapshot.monsters.length > MAX_VISIBLE_MONSTERS) {
