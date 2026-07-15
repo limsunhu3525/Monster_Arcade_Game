@@ -6,22 +6,29 @@ const HOT_RED = '#ff003c';
 const DEEP_RED = '#d50032';
 const RED_BLOOM = '#ff0055';
 
-const staticBox = (
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  rotation = 0,
+const rail = (
+  x1: number,
+  y1: number,
+  x2: number,
+  y2: number,
+  thickness = 0.14,
   restitution = 0.15,
   color = NEON_RED
 ): MapEntity => ({
-  position: { x, y },
+  position: { x: (x1 + x2) / 2, y: (y1 + y2) / 2 },
   type: 'static',
-  shape: { type: 'box', width, height, rotation, color, bloomColor: RED_BLOOM },
+  shape: {
+    type: 'box',
+    width: Math.hypot(x2 - x1, y2 - y1) / 2,
+    height: thickness,
+    rotation: Math.atan2(y2 - y1, x2 - x1),
+    color,
+    bloomColor: RED_BLOOM,
+  },
   props: { density: 1, restitution, angularVelocity: 0 },
 });
 
-const bumper = (x: number, y: number, radius = 0.42, restitution = 0.95): MapEntity => ({
+const bumper = (x: number, y: number, radius = 0.4, restitution = 0.95): MapEntity => ({
   position: { x, y },
   type: 'static',
   shape: { type: 'circle', radius, color: HOT_RED, bloomColor: RED_BLOOM },
@@ -31,63 +38,57 @@ const bumper = (x: number, y: number, radius = 0.42, restitution = 0.95): MapEnt
 const spinner = (
   x: number,
   y: number,
-  width: number,
+  halfLength: number,
   angularVelocity: number,
   rotation = 0,
   color = NEON_RED
 ): MapEntity => ({
   position: { x, y },
   type: 'kinematic',
-  shape: { type: 'box', width, height: 0.16, rotation, color, bloomColor: RED_BLOOM },
-  props: { density: 1, restitution: 0.35, angularVelocity },
+  shape: {
+    type: 'box',
+    width: halfLength,
+    height: 0.15,
+    rotation,
+    color,
+    bloomColor: RED_BLOOM,
+  },
+  props: { density: 1, restitution: 0.32, angularVelocity },
 });
+
+const crossSpinner = (x: number, y: number, halfLength: number, angularVelocity: number): MapEntity[] => [
+  spinner(x, y, halfLength, angularVelocity, 0, HOT_RED),
+  spinner(x, y, halfLength, angularVelocity, Math.PI / 2, DEEP_RED),
+];
 
 const slidingGateHalf = (x: number, y: number, direction: -1 | 1): MapEntity => ({
   position: { x, y },
   type: 'kinematic',
-  shape: { type: 'box', width: 1.3, height: 0.18, rotation: 0, color: HOT_RED, bloomColor: RED_BLOOM },
-  props: { density: 1, restitution: 0.2, angularVelocity: 0 },
+  shape: {
+    type: 'box',
+    width: 1.2,
+    height: 0.18,
+    rotation: 0,
+    color: HOT_RED,
+    bloomColor: RED_BLOOM,
+  },
+  props: { density: 1, restitution: 0.18, angularVelocity: 0 },
   motion: {
     type: 'slide',
     axis: 'x',
-    distance: 2.15,
-    speed: 2.2,
+    distance: 2.6,
+    speed: 2.4,
     direction,
     holdClosedMs: 2400,
-    holdOpenMs: 1500,
+    holdOpenMs: 1700,
   },
 });
 
-const pinField = (
-  startY: number,
-  rows: number,
-  columns: number,
-  gapX: number,
-  gapY: number,
-  offsetEveryOtherRow = true
-): MapEntity[] => {
-  const items: MapEntity[] = [];
-  const totalWidth = (columns - 1) * gapX;
-  const startX = 16 - totalWidth / 2;
-
-  for (let row = 0; row < rows; row += 1) {
-    const offset = offsetEveryOtherRow && row % 2 === 1 ? gapX / 2 : 0;
-    for (let col = 0; col < columns; col += 1) {
-      const x = startX + col * gapX + offset;
-      if (x > 23.1) continue;
-      items.push(bumper(x, startY + row * gapY, row % 3 === 0 ? 0.46 : 0.36, row % 2 === 0 ? 1.05 : 0.82));
-    }
-  }
-
-  return items;
-};
-
-const crossSpinner = (x: number, y: number, size: number, angularVelocity: number): MapEntity[] => [
-  spinner(x, y, size, angularVelocity, 0, HOT_RED),
-  spinner(x, y, size, angularVelocity, Math.PI / 2, DEEP_RED),
-];
+const pinRow = (y: number, xs: number[], radius = 0.38): MapEntity[] =>
+  xs.map((x, index) => bumper(x, y, radius, index % 2 === 0 ? 1.02 : 0.86));
 
 const crazyEntities: MapEntity[] = [
+  // Outer rails. Everything inside remains physically contained.
   {
     position: { x: 0, y: 0 },
     type: 'static',
@@ -98,7 +99,7 @@ const crazyEntities: MapEntity[] = [
       bloomColor: RED_BLOOM,
       points: [
         [7.8, -300],
-        [7.8, 155],
+        [7.8, 175],
       ],
     },
     props: { density: 1, restitution: 0.2, angularVelocity: 0 },
@@ -113,86 +114,98 @@ const crazyEntities: MapEntity[] = [
       bloomColor: RED_BLOOM,
       points: [
         [24.2, -300],
-        [24.2, 155],
+        [24.2, 175],
       ],
     },
     props: { density: 1, restitution: 0.2, angularVelocity: 0 },
   },
 
-  staticBox(10.5, 10.8, 3.2, 0.16, 0.24, 0.18),
-  staticBox(21.5, 10.8, 3.2, 0.16, -0.24, 0.18),
-  bumper(16, 13.6, 0.62, 1.08),
+  // Opening funnel. The two rails never meet and leave a wide central route.
+  rail(8.8, 10.5, 12.0, 13.8, 0.14, 0.16),
+  rail(23.2, 10.5, 20.0, 13.8, 0.14, 0.16),
+  bumper(13.2, 15.5, 0.42, 1.04),
+  bumper(18.8, 15.5, 0.42, 1.04),
 
-  ...pinField(17.5, 5, 5, 3.0, 3.0),
+  // Pinball field. Every row keeps a guaranteed central gap.
+  ...pinRow(19, [10.2, 13.1, 18.9, 21.8]),
+  ...pinRow(23, [11.4, 14.4, 17.6, 20.6]),
+  ...pinRow(27, [10.2, 13.1, 18.9, 21.8]),
+  ...pinRow(31, [11.4, 14.4, 17.6, 20.6]),
 
-  spinner(11.7, 34.5, 3.1, 2.65, 0.12),
-  spinner(20.3, 34.5, 3.1, -2.35, -0.18, HOT_RED),
-  bumper(16, 35.2, 0.55, 1.12),
+  // Side sweepers create overtakes without ever spanning the whole map.
+  spinner(11.3, 36.5, 2.0, 2.7, 0.08),
+  spinner(20.7, 36.5, 2.0, -2.45, -0.1, HOT_RED),
+  bumper(14.0, 39.5, 0.4, 0.92),
+  bumper(18.0, 39.5, 0.4, 0.92),
 
-  staticBox(11.0, 42.0, 3.6, 0.14, 0.42, 0.28),
-  staticBox(21.0, 42.0, 3.6, 0.14, -0.42, 0.28),
-  staticBox(12.6, 49.0, 3.1, 0.14, -0.3, 0.22, DEEP_RED),
-  staticBox(19.4, 49.0, 3.1, 0.14, 0.3, 0.22, DEEP_RED),
-  bumper(10.0, 46.0, 0.5, 1.0),
-  bumper(22.0, 46.0, 0.5, 1.0),
-  bumper(16.0, 51.0, 0.65, 1.15),
+  // Split-and-rejoin ramps. Endpoints remain separated so no V-shaped wall can form.
+  rail(8.8, 43.0, 12.8, 47.0, 0.14, 0.22),
+  rail(23.2, 43.0, 19.2, 47.0, 0.14, 0.22),
+  rail(10.0, 52.0, 13.0, 55.0, 0.14, 0.2, DEEP_RED),
+  rail(22.0, 52.0, 19.0, 55.0, 0.14, 0.2, DEEP_RED),
 
-  ...crossSpinner(12.0, 58.0, 2.7, 3.15),
-  ...crossSpinner(20.0, 58.0, 2.7, -2.75),
-  spinner(16.0, 64.0, 4.3, 1.85, 0.08, HOT_RED),
+  // Two independent blenders. The center and outer lanes can always recover.
+  ...crossSpinner(11.5, 60.0, 1.9, 3.0),
+  ...crossSpinner(20.5, 60.0, 1.9, -2.75),
+  bumper(14.0, 64.0, 0.42, 1.06),
+  bumper(18.0, 64.0, 0.42, 1.06),
 
-  bumper(9.5, 69.0, 0.5, 1.12),
-  bumper(13.0, 68.0, 0.42, 0.92),
-  bumper(16.0, 70.0, 0.58, 1.18),
-  bumper(19.0, 68.0, 0.42, 0.92),
-  bumper(22.5, 69.0, 0.5, 1.12),
-  bumper(11.0, 74.0, 0.55, 1.08),
-  bumper(15.0, 75.0, 0.44, 0.9),
-  bumper(18.0, 74.0, 0.44, 0.9),
-  bumper(21.0, 75.0, 0.55, 1.08),
+  // Dense chaos chamber with staggered bumpers and no connected static wall.
+  bumper(9.8, 68.0, 0.5, 1.1),
+  bumper(12.8, 70.0, 0.4, 0.92),
+  bumper(19.2, 70.0, 0.4, 0.92),
+  bumper(22.2, 68.0, 0.5, 1.1),
+  bumper(11.2, 75.0, 0.45, 1.04),
+  bumper(14.0, 77.0, 0.38, 0.9),
+  bumper(18.0, 77.0, 0.38, 0.9),
+  bumper(20.8, 75.0, 0.45, 1.04),
 
-  // Diagonal regrouping chute: no vertical walls or right-angle pockets.
-  staticBox(10.7, 80.5, 3.25, 0.16, 0.34, 0.2),
-  staticBox(21.3, 80.5, 3.25, 0.16, -0.34, 0.2),
-  staticBox(12.75, 84.2, 2.45, 0.14, 0.58, 0.14, DEEP_RED),
-  staticBox(19.25, 84.2, 2.45, 0.14, -0.58, 0.14, DEEP_RED),
-  staticBox(14.15, 88.6, 2.05, 0.14, 0.72, 0.12, DEEP_RED),
-  staticBox(17.85, 88.6, 2.05, 0.14, -0.72, 0.12, DEEP_RED),
-  slidingGateHalf(14.7, 91.0, -1),
-  slidingGateHalf(17.3, 91.0, 1),
-  staticBox(13.8, 94.0, 2.0, 0.14, -0.62, 0.14, HOT_RED),
-  staticBox(18.2, 94.0, 2.0, 0.14, 0.62, 0.14, HOT_RED),
-  bumper(13.1, 96.6, 0.38, 0.88),
-  bumper(18.9, 96.6, 0.38, 0.88),
+  // Regrouping funnel. Rails guide the pack toward the gate but stop well before touching.
+  rail(8.8, 82.0, 13.2, 89.0, 0.14, 0.16),
+  rail(23.2, 82.0, 18.8, 89.0, 0.14, 0.16),
+  rail(13.2, 89.0, 13.6, 92.0, 0.13, 0.12, DEEP_RED),
+  rail(18.8, 89.0, 18.4, 92.0, 0.13, 0.12, DEEP_RED),
 
-  spinner(10.8, 101.0, 2.45, -3.35, 0.2),
-  spinner(16.0, 101.0, 2.9, 2.65, -0.15, HOT_RED),
-  spinner(21.2, 101.0, 2.45, -3.05, 0.25),
-  bumper(13.4, 105.5, 0.48, 1.08),
-  bumper(18.6, 105.5, 0.48, 1.08),
+  // Sliding gate: fully closed for regrouping, then opens to a gap far wider than one marble.
+  slidingGateHalf(14.7, 92.5, -1),
+  slidingGateHalf(17.3, 92.5, 1),
 
-  ...pinField(110.0, 4, 6, 2.35, 3.0),
+  // Exit rails angle outward, preventing a second bottleneck immediately after the release.
+  rail(13.6, 95.0, 11.8, 99.0, 0.13, 0.14, HOT_RED),
+  rail(18.4, 95.0, 20.2, 99.0, 0.13, 0.14, HOT_RED),
+  bumper(13.2, 101.5, 0.38, 0.9),
+  bumper(18.8, 101.5, 0.38, 0.9),
 
-  staticBox(10.8, 124.0, 3.3, 0.15, 0.46, 0.3),
-  staticBox(21.2, 124.0, 3.3, 0.15, -0.46, 0.3),
-  ...crossSpinner(16.0, 129.5, 3.4, 3.45),
-  bumper(10.0, 133.0, 0.5, 1.1),
-  bumper(22.0, 133.0, 0.5, 1.1),
+  // Moving hazards stay short enough that another route always exists around them.
+  spinner(12.0, 106.0, 1.9, -3.15, 0.16),
+  spinner(20.0, 106.0, 1.9, 2.9, -0.14, HOT_RED),
 
-  // Diagonal finish chute: continuous sloped rails guide racers through a visible narrow finish.
-  staticBox(10.9, 138.0, 4.0, 0.16, 0.42, 0.16, HOT_RED),
-  staticBox(21.1, 138.0, 4.0, 0.16, -0.42, 0.16, HOT_RED),
-  staticBox(13.0, 143.2, 2.7, 0.15, 0.62, 0.12, DEEP_RED),
-  staticBox(19.0, 143.2, 2.7, 0.15, -0.62, 0.12, DEEP_RED),
-  staticBox(14.35, 147.5, 2.0, 0.14, 0.78, 0.1, HOT_RED),
-  staticBox(17.65, 147.5, 2.0, 0.14, -0.78, 0.1, HOT_RED),
-  staticBox(14.8, 151.2, 1.35, 0.12, -0.42, 0.08, HOT_RED),
-  staticBox(17.2, 151.2, 1.35, 0.12, 0.42, 0.08, HOT_RED),
+  // Second pin field reshuffles the order while preserving the central safety lane.
+  ...pinRow(114, [10.2, 13.1, 18.9, 21.8]),
+  ...pinRow(118, [11.4, 14.4, 17.6, 20.6]),
+  ...pinRow(122, [10.2, 13.1, 18.9, 21.8]),
+
+  // Final chaos zone, again using independent side obstacles instead of a connected V.
+  rail(8.8, 133.0, 12.6, 137.0, 0.14, 0.22),
+  rail(23.2, 133.0, 19.4, 137.0, 0.14, 0.22),
+  ...crossSpinner(11.5, 138.5, 1.8, 3.25),
+  ...crossSpinner(20.5, 138.5, 1.8, -3.0),
+  bumper(10.0, 141.0, 0.45, 1.04),
+  bumper(22.0, 141.0, 0.45, 1.04),
+
+  // Final finish funnel. It narrows gradually and never closes into a point.
+  rail(8.8, 145.0, 14.2, 153.0, 0.16, 0.12, HOT_RED),
+  rail(23.2, 145.0, 17.8, 153.0, 0.16, 0.12, HOT_RED),
+
+  // Long narrow finish chute. Racers must travel through this corridor before crossing goalY.
+  // The passage narrows from 3.6 to 3.0 world units, which is still six marble diameters wide.
+  rail(14.2, 153.0, 14.5, 171.0, 0.16, 0.08, DEEP_RED),
+  rail(17.8, 153.0, 17.5, 171.0, 0.16, 0.08, DEEP_RED),
 ];
 
 export const crazyMap: StageDef = {
   title: '미친맵',
-  goalY: 154,
-  zoomY: 148.5,
+  goalY: 172.5,
+  zoomY: 166.5,
   entities: crazyEntities,
 };
