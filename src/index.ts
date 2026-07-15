@@ -17,12 +17,14 @@ import { cleanupLegacyUi } from './ui/legacyUiCleanup';
 import './ui/mobileResponsive.scss';
 import './ui/mobileCompactOverrides.scss';
 import { MobileTraitSetupController } from './ui/mobileTraitSetupController';
+import { MobileTraitBubbleController } from './ui/mobileTraitBubbleController';
 import { ResultModal } from './ui/resultModal';
 import './ui/selectionImageQuality.scss';
 import './ui/setupFlowOverrides.scss';
 import { StartScreen } from './ui/startScreen';
 import { TraitSelectionModal } from './ui/traitSelectionModal';
 import './ui/mobileSplitSetup.scss';
+import './ui/mobileParticipantGridAndBubble.scss';
 
 const DEFAULT_GAME_SPEED = 0.65;
 
@@ -61,6 +63,9 @@ traitSelectionModal.mount();
 
 const mobileTraitSetupController = new MobileTraitSetupController();
 mobileTraitSetupController.mount();
+
+const mobileTraitBubbleController = new MobileTraitBubbleController(monsterRuntime);
+mobileTraitBubbleController.mount();
 
 startScreen.mount(() => {
   startScreen.hide();
@@ -122,6 +127,7 @@ if (debugEnabled) {
 (window as any).collisionReactionVfxController = collisionReactionVfxController;
 (window as any).traitSelectionModal = traitSelectionModal;
 (window as any).mobileTraitSetupController = mobileTraitSetupController;
+(window as any).mobileTraitBubbleController = mobileTraitBubbleController;
 (window as any).resultModal = resultModal;
 (window as any).startScreen = startScreen;
 (window as any).DEFAULT_GAME_SPEED = DEFAULT_GAME_SPEED;
