@@ -142,7 +142,11 @@ export class MonsterCollisionReactionSystem {
 
     physics.setMarblePhysicsProfile(iceId, { frictionMultiplier: 1 });
     window.setTimeout(() => {
-      physics.setMarblePhysicsProfile(iceId, { frictionMultiplier: 0.65 });
+      const iceMonster = this.runtime.getSnapshot().monsters.find((monster) => monster.marbleId === iceId);
+      const iceDefinition = iceMonster ? getMonsterDefinition(iceMonster.definitionId) : undefined;
+      physics.setMarblePhysicsProfile(iceId, {
+        frictionMultiplier: iceDefinition?.stats.frictionMultiplier ?? 0.55,
+      });
     }, 900);
   }
 
