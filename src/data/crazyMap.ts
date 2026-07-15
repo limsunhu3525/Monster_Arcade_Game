@@ -42,6 +42,22 @@ const spinner = (
   props: { density: 1, restitution: 0.35, angularVelocity },
 });
 
+const slidingGateHalf = (x: number, y: number, direction: -1 | 1): MapEntity => ({
+  position: { x, y },
+  type: 'kinematic',
+  shape: { type: 'box', width: 1.425, height: 0.2, rotation: 0, color: HOT_RED, bloomColor: RED_BLOOM },
+  props: { density: 1, restitution: 0.2, angularVelocity: 0 },
+  motion: {
+    type: 'slide',
+    axis: 'x',
+    distance: 2,
+    speed: 2.2,
+    direction,
+    holdClosedMs: 2400,
+    holdOpenMs: 1500,
+  },
+});
+
 const pinField = (
   startY: number,
   rows: number,
@@ -83,7 +99,7 @@ const crazyEntities: MapEntity[] = [
       bloomColor: RED_BLOOM,
       points: [
         [7.8, -300],
-        [7.8, 145],
+        [7.8, 155],
       ],
     },
     props: { density: 1, restitution: 0.2, angularVelocity: 0 },
@@ -98,7 +114,7 @@ const crazyEntities: MapEntity[] = [
       bloomColor: RED_BLOOM,
       points: [
         [24.2, -300],
-        [24.2, 145],
+        [24.2, 155],
       ],
     },
     props: { density: 1, restitution: 0.2, angularVelocity: 0 },
@@ -142,33 +158,50 @@ const crazyEntities: MapEntity[] = [
   bumper(18.0, 74.0, 0.44, 0.9),
   bumper(21.0, 75.0, 0.55, 1.08),
 
-  // Narrow zig-zag compression zone: builds a pack again before the next explosion.
-  staticBox(10.4, 81.5, 3.0, 0.15, 0.36, 0.25),
-  staticBox(21.6, 81.5, 3.0, 0.15, -0.36, 0.25),
-  staticBox(13.0, 87.0, 3.5, 0.15, -0.28, 0.28, HOT_RED),
-  staticBox(19.0, 87.0, 3.5, 0.15, 0.28, 0.28, HOT_RED),
+  // Pack gate: a funnel forces everyone into one lane, then two doors slide apart and close again.
+  // The closed hold intentionally lets a meaningful chunk of the field regroup before release.
+  staticBox(10.6, 80.8, 3.0, 0.16, 0.38, 0.22),
+  staticBox(21.4, 80.8, 3.0, 0.16, -0.38, 0.22),
+  staticBox(13.15, 86.3, 0.14, 4.6, 0, 0.12, DEEP_RED),
+  staticBox(18.85, 86.3, 0.14, 4.6, 0, 0.12, DEEP_RED),
+  slidingGateHalf(14.575, 86.0, -1),
+  slidingGateHalf(17.425, 86.0, 1),
+  bumper(14.2, 91.6, 0.42, 0.9),
+  bumper(17.8, 91.6, 0.42, 0.9),
 
-  // Triple roulette gates. No lane stays consistently safe.
-  spinner(10.8, 94.0, 2.45, -3.35, 0.2),
-  spinner(16.0, 94.0, 2.9, 2.65, -0.15, HOT_RED),
-  spinner(21.2, 94.0, 2.45, -3.05, 0.25),
-  bumper(13.4, 98.5, 0.48, 1.08),
-  bumper(18.6, 98.5, 0.48, 1.08),
+  // Triple roulette gates. No lane stays consistently safe after the pack release.
+  spinner(10.8, 96.0, 2.45, -3.35, 0.2),
+  spinner(16.0, 96.0, 2.9, 2.65, -0.15, HOT_RED),
+  spinner(21.2, 96.0, 2.45, -3.05, 0.25),
+  bumper(13.4, 100.5, 0.48, 1.08),
+  bumper(18.6, 100.5, 0.48, 1.08),
 
   // Second pin field, offset from the first to reshuffle any established order.
-  ...pinField(103.0, 4, 6, 2.35, 3.0),
+  ...pinField(105.0, 4, 6, 2.35, 3.0),
 
-  // Final gauntlet: a converging funnel, a last cross, then an open sprint to the line.
-  staticBox(10.8, 117.0, 3.3, 0.15, 0.46, 0.3),
-  staticBox(21.2, 117.0, 3.3, 0.15, -0.46, 0.3),
-  ...crossSpinner(16.0, 122.5, 3.4, 3.45),
-  bumper(10.0, 126.0, 0.5, 1.1),
-  bumper(22.0, 126.0, 0.5, 1.1),
+  // Final gauntlet before the finish funnel.
+  staticBox(10.8, 119.0, 3.3, 0.15, 0.46, 0.3),
+  staticBox(21.2, 119.0, 3.3, 0.15, -0.46, 0.3),
+  ...crossSpinner(16.0, 124.5, 3.4, 3.45),
+  bumper(10.0, 128.0, 0.5, 1.1),
+  bumper(22.0, 128.0, 0.5, 1.1),
+
+  // Final finish funnel: the whole field is physically forced toward one unmistakable central chute.
+  staticBox(10.9, 133.0, 4.0, 0.18, 0.47, 0.18, HOT_RED),
+  staticBox(21.1, 133.0, 4.0, 0.18, -0.47, 0.18, HOT_RED),
+  staticBox(14.05, 141.5, 0.16, 8.5, 0, 0.08, DEEP_RED),
+  staticBox(17.95, 141.5, 0.16, 8.5, 0, 0.08, DEEP_RED),
+
+  // Bright inward lips make the finish line read like a real gate and require a clean central pass.
+  staticBox(14.6, 147.0, 0.55, 0.13, 0, 0.08, HOT_RED),
+  staticBox(17.4, 147.0, 0.55, 0.13, 0, 0.08, HOT_RED),
+  staticBox(14.05, 147.0, 0.28, 0.8, 0, 0.08, HOT_RED),
+  staticBox(17.95, 147.0, 0.28, 0.8, 0, 0.08, HOT_RED),
 ];
 
 export const crazyMap: StageDef = {
   title: '미친맵',
-  goalY: 136,
-  zoomY: 130.5,
+  goalY: 149,
+  zoomY: 143.5,
   entities: crazyEntities,
 };
