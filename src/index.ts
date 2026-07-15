@@ -20,6 +20,7 @@ import './ui/mobileCompactOverrides.scss';
 import { MobileTraitSetupController } from './ui/mobileTraitSetupController';
 import { MobileTraitBubbleController } from './ui/mobileTraitBubbleController';
 import { ResultModal } from './ui/resultModal';
+import { SelectionScrollPreserver } from './ui/selectionScrollPreserver';
 import './ui/selectionImageQuality.scss';
 import './ui/setupFlowOverrides.scss';
 import { StartScreen } from './ui/startScreen';
@@ -83,6 +84,9 @@ mobileTraitSetupController.mount();
 
 const mobileTraitBubbleController = new MobileTraitBubbleController(monsterRuntime);
 mobileTraitBubbleController.mount();
+
+const selectionScrollPreserver = new SelectionScrollPreserver();
+selectionScrollPreserver.mount();
 
 const showHome = () => {
   setupViewOpen = false;
@@ -199,6 +203,7 @@ if (debugEnabled) {
 (window as any).traitSelectionModal = traitSelectionModal;
 (window as any).mobileTraitSetupController = mobileTraitSetupController;
 (window as any).mobileTraitBubbleController = mobileTraitBubbleController;
+(window as any).selectionScrollPreserver = selectionScrollPreserver;
 (window as any).resultModal = resultModal;
 (window as any).startScreen = startScreen;
 (window as any).DEFAULT_GAME_SPEED = DEFAULT_GAME_SPEED;
