@@ -1,0 +1,14 @@
+@media (max-width: 640px) {
+  .trait-picker.is-mobile-dedicated[data-mobile-split] .trait-picker__participant-list {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    align-content: start;
+    gap: 7px !important;
+  }
+
+  .trait-picker.is-mobile-dedicated[data-mobile-split] .trait-picker__participant {
+    position: relative;
+    display: grid !important;
+    grid-template-columns: 38px minmax(0, 1fr) 22px !important;
+    grid-template-rows: auto 26px !important;
+    grid-template-areas
