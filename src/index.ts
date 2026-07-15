@@ -1,5 +1,6 @@
 import './localization';
 import { MonsterCollisionReactionSystem } from './collision/monsterCollisionReactionSystem';
+import { registerCrazyMap } from './data/registerCrazyMap';
 import { MonsterDebugPanel } from './debug/monsterDebugPanel';
 import { CollisionReactionVfxController } from './effects/collisionReactionVfxController';
 import { SkillVfxController } from './effects/skillVfxController';
@@ -31,6 +32,7 @@ const DEFAULT_GAME_SPEED = 0.65;
 applyMonsterArcadeBranding();
 registerServiceWorker();
 cleanupLegacyUi();
+registerCrazyMap();
 
 const roulette = new Roulette();
 roulette.setSpeed(DEFAULT_GAME_SPEED);
