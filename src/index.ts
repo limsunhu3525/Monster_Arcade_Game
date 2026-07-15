@@ -22,6 +22,7 @@ import './ui/selectionImageQuality.scss';
 import './ui/setupFlowOverrides.scss';
 import { StartScreen } from './ui/startScreen';
 import { TraitSelectionModal } from './ui/traitSelectionModal';
+import './ui/mobileSplitSetup.scss';
 
 const DEFAULT_GAME_SPEED = 0.65;
 
