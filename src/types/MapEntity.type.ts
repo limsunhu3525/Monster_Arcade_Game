@@ -35,11 +35,24 @@ export type EntityPhysicalProps = {
   life?: number;
 };
 
+export interface EntitySlideMotion {
+  type: 'slide';
+  axis: 'x' | 'y';
+  distance: number;
+  speed: number;
+  direction?: -1 | 1;
+  holdClosedMs?: number;
+  holdOpenMs?: number;
+}
+
+export type EntityMotion = EntitySlideMotion;
+
 export interface MapEntity {
   position: VectorLike;
   type: 'static' | 'kinematic';
   shape: EntityShape;
   props: EntityPhysicalProps;
+  motion?: EntityMotion;
 }
 
 export interface MapEntityState {
