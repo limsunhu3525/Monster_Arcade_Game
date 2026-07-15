@@ -3,15 +3,21 @@ import type { StageDef } from './data/maps';
 import type { IPhysics, MarbleCollisionPair, MarblePhysicsProfile } from './IPhysics';
 import type { MapEntity, MapEntityState } from './types/MapEntity.type';
 
+type PhysicsEntityState = MapEntityState & {
+  body: Box2D.b2Body;
+  motion?: MapEntity['motion'];
+  originX: number;
+  originY: number;
+  motionElapsedMs: number;
+};
+
 export class Box2dPhysics implements IPhysics {
   private Box2D!: typeof Box2D & EmscriptenModule;
   private gravity!: Box2D.b2Vec2;
   private world!: Box2D.b2World;
-
   private marbleMap: { [id: number]: Box2D.b2Body } = {};
   private marbleBaseDensity: { [id: number]: number } = {};
-  private entities: ({ body: Box2D.b2Body } & MapEntityState)[] = [];
-
+  private entities: PhysicsEntityState[] = [];
   private deleteCandidates: Box2D.b2Body[] = [];
 
   async init(): Promise<void> {
@@ -91,6 +97,10 @@ export class Box2dPhysics implements IPhysics {
         angle: 0,
         shape: entity.shape,
         life: entity.props.life ?? -1,
+        motion: entity.motion,
+        originX: entity.position.x,
+        originY: entity.position.y,
+        motionElapsedMs: 0,
       });
     });
   }
@@ -236,10 +246,16 @@ export class Box2dPhysics implements IPhysics {
   }
 
   getEntities(): MapEntityState[] {
-    return this.entities.map((entity) => ({
-      ...entity,
-      angle: entity.body.GetAngle(),
-    }));
+    return this.entities.map((entity) => {
+      const position = entity.body.GetPosition();
+      return {
+        x: position.x,
+        y: position.y,
+        angle: entity.body.GetAngle(),
+        shape: entity.shape,
+        life: entity.life,
+      };
+    });
   }
 
   impact(id: number): void {
@@ -276,6 +292,7 @@ export class Box2dPhysics implements IPhysics {
     });
     this.deleteCandidates = [];
 
+    this.updateEntityMotions(deltaSeconds);
     this.world.Step(deltaSeconds, 6, 2);
 
     for (let i = this.entities.length - 1; i >= 0; i--) {
@@ -288,5 +305,42 @@ export class Box2dPhysics implements IPhysics {
         }
       }
     }
+  }
+
+  private updateEntityMotions(deltaSeconds: number) {
+    const deltaMs = deltaSeconds * 1000;
+
+    this.entities.forEach((entity) => {
+      const motion = entity.motion;
+      if (!motion || motion.type !== 'slide') return;
+
+      const distance = Math.max(0, motion.distance);
+      const speed = Math.max(0.001, motion.speed);
+      if (distance <= 0) return;
+
+      entity.motionElapsedMs += deltaMs;
+      const travelMs = (distance / speed) * 1000;
+      const holdClosedMs = Math.max(0, motion.holdClosedMs ?? 0);
+      const holdOpenMs = Math.max(0, motion.holdOpenMs ?? 0);
+      const cycleMs = holdClosedMs + travelMs + holdOpenMs + travelMs;
+      const time = entity.motionElapsedMs % Math.max(1, cycleMs);
+
+      let progress = 0;
+      if (time < holdClosedMs) {
+        progress = 0;
+      } else if (time < holdClosedMs + travelMs) {
+        progress = (time - holdClosedMs) / travelMs;
+      } else if (time < holdClosedMs + travelMs + holdOpenMs) {
+        progress = 1;
+      } else {
+        progress = 1 - (time - holdClosedMs - travelMs - holdOpenMs) / travelMs;
+      }
+
+      const direction = motion.direction ?? 1;
+      const offset = distance * Math.max(0, Math.min(1, progress)) * direction;
+      const x = entity.originX + (motion.axis === 'x' ? offset : 0);
+      const y = entity.originY + (motion.axis === 'y' ? offset : 0);
+      entity.body.SetTransform(new this.Box2D.b2Vec2(x, y), entity.body.GetAngle());
+    });
   }
 }
