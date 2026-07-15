@@ -28,11 +28,23 @@ import './ui/mobileSplitSetup.scss';
 import './ui/mobileParticipantGridAndBubble.scss';
 
 const DEFAULT_GAME_SPEED = 0.65;
+const HISTORY_VIEW_KEY = 'monsterArcadeView';
+
+type AppHistoryView = 'home' | 'setup' | 'race';
+
+const getHistoryView = (): AppHistoryView | undefined => window.history.state?.[HISTORY_VIEW_KEY];
+const replaceHistoryView = (view: AppHistoryView) => {
+  window.history.replaceState({ ...(window.history.state ?? {}), [HISTORY_VIEW_KEY]: view }, '', window.location.href);
+};
+const pushHistoryView = (view: AppHistoryView) => {
+  window.history.pushState({ ...(window.history.state ?? {}), [HISTORY_VIEW_KEY]: view }, '', window.location.href);
+};
 
 applyMonsterArcadeBranding();
 registerServiceWorker();
 cleanupLegacyUi();
 registerCrazyMap();
+replaceHistoryView('home');
 
 const roulette = new Roulette();
 roulette.setSpeed(DEFAULT_GAME_SPEED);
@@ -49,8 +61,11 @@ const setParticipants = (names: string[]) => {
 };
 
 const startScreen = new StartScreen();
+let setupViewOpen = false;
 
 const startRaceFromSetup = () => {
+  setupViewOpen = false;
+  replaceHistoryView('race');
   startScreen.hide();
   roulette.start();
   document.querySelector('#settings')?.classList.add('hide');
@@ -69,9 +84,63 @@ mobileTraitSetupController.mount();
 const mobileTraitBubbleController = new MobileTraitBubbleController(monsterRuntime);
 mobileTraitBubbleController.mount();
 
-startScreen.mount(() => {
+const showHome = () => {
+  setupViewOpen = false;
+  traitSelectionModal.close();
+  startScreen.show();
+  replaceHistoryView('home');
+};
+
+const openSetupFromHome = () => {
+  if (getHistoryView() !== 'home') replaceHistoryView('home');
+  pushHistoryView('setup');
+  setupViewOpen = true;
   startScreen.hide();
   traitSelectionModal.open();
+};
+
+const returnHomeFromSetup = () => {
+  if (!setupViewOpen) return;
+
+  setupViewOpen = false;
+  traitSelectionModal.close();
+  startScreen.show();
+
+  if (getHistoryView() === 'setup') {
+    window.history.back();
+  } else {
+    replaceHistoryView('home');
+  }
+};
+
+startScreen.mount(openSetupFromHome);
+
+document.addEventListener('click', (event) => {
+  if (!setupViewOpen) return;
+  const target = event.target as Element | null;
+  if (!target?.closest('.trait-picker__close, .trait-picker__cancel, .trait-picker__backdrop')) return;
+  returnHomeFromSetup();
+});
+
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape' && setupViewOpen) returnHomeFromSetup();
+});
+
+window.addEventListener('popstate', () => {
+  const view = getHistoryView();
+
+  if (view === 'setup') {
+    setupViewOpen = true;
+    startScreen.hide();
+    traitSelectionModal.open();
+    return;
+  }
+
+  if (setupViewOpen) {
+    setupViewOpen = false;
+    traitSelectionModal.close();
+    startScreen.show();
+  }
 });
 
 const prepareNextRace = () => {
@@ -81,12 +150,12 @@ const prepareNextRace = () => {
 const resultModal = new ResultModal(monsterRuntime, {
   showHome: () => {
     prepareNextRace();
-    startScreen.show();
+    showHome();
   },
   openSetup: () => {
     prepareNextRace();
-    startScreen.hide();
-    traitSelectionModal.open();
+    replaceHistoryView('home');
+    openSetupFromHome();
   },
 });
 resultModal.mount(roulette);
