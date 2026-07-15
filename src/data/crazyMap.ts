@@ -225,6 +225,9 @@ const crazyEntities: MapEntity[] = [
   bumper(10.0, 141.0, 0.45, 1.04),
   bumper(22.0, 141.0, 0.45, 1.04),
 
+  // One final center cross creates a last overtake moment immediately before the finish funnel.
+  ...crossSpinner(16.0, 143.0, 1.55, 3.55),
+
   // Final finish funnel. Both outer ends meet the walls, so every racer must enter the funnel.
   rail(LEFT_WALL_X, 145.0, 14.2, 153.0, 0.16, 0.12, HOT_RED),
   rail(RIGHT_WALL_X, 145.0, 17.8, 153.0, 0.16, 0.12, HOT_RED),
