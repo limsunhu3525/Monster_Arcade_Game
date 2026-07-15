@@ -15,6 +15,7 @@ import { MonsterSkillExecutor } from './skills/monsterSkillExecutor';
 import { applyMonsterArcadeBranding } from './ui/branding';
 import { cleanupLegacyUi } from './ui/legacyUiCleanup';
 import './ui/mobileResponsive.scss';
+import './ui/mobileCompactOverrides.scss';
 import { MobileTraitSetupController } from './ui/mobileTraitSetupController';
 import { ResultModal } from './ui/resultModal';
 import './ui/selectionImageQuality.scss';
